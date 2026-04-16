@@ -4,49 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>日文單字 App</title>
+    <title>日文單字 App - 測驗增強版</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 4px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .app-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; flex-grow: 1; }
         
-        /* 頂部僅保留篩選與統計 */
-        .top-bar { width: 100%; margin-bottom: 10px; }
-        select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; background: white; outline: none; }
-        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a4b0be; padding: 5px; }
+        /* 頂部切換選單 - 獨立出一欄測驗 */
+        .mode-tabs { display: flex; width: 100%; gap: 5px; margin-bottom: 8px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* 中間閃卡 */
-        .card-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
-        .card { width: 100%; height: 280px; perspective: 1000px; }
+        .top-bar { width: 100%; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--primary); font-size: 15px; font-weight: bold; background: white; outline: none; }
+        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #a4b0be; padding: 2px 5px; }
+
+        /* 間距縮小後的卡片區 */
+        .card-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; margin: 5px 0; }
+        .card { width: 100%; height: 240px; perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 25px; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); }
         
-        #word-display { font-size: 2.8rem; font-weight: bold; color: #2f3542; text-align: center; width: 90%; }
-        #meaning-display { font-size: 2.2rem; text-align: center; }
-        .cat-tag { position: absolute; top: 20px; left: 25px; font-size: 12px; color: #bdc3c7; font-weight: bold; }
-        .fav-status { position: absolute; top: 20px; right: 60px; font-size: 11px; color: var(--warning); font-weight: bold; display: none; }
-        .star-btn { position: absolute; top: 12px; right: 20px; font-size: 32px; color: #eee; background: none; border: none; padding: 5px; cursor: pointer; }
+        #word-display { font-size: 2.5rem; font-weight: bold; color: #2f3542; text-align: center; width: 90%; }
+        #meaning-display { font-size: 2rem; text-align: center; }
+        .cat-tag { position: absolute; top: 15px; left: 20px; font-size: 11px; color: #bdc3c7; font-weight: bold; }
+        .star-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 底部操作區 */
-        .bottom-section { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-bottom: 20px; }
-        .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .nav-btn { background: white; border: 1px solid #eee; padding: 18px; border-radius: 18px; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; }
-        .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: bold; }
+        /* 測驗模式專用樣式 */
+        #quiz-view { display: none; width: 100%; text-align: center; flex-direction: column; align-items: center; }
+        .quiz-box { background: white; width: 100%; padding: 30px 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .ans-text { font-size: 24px; color: var(--success); margin-top: 20px; font-weight: bold; min-height: 36px; }
+
+        /* 底部操作區緊湊化 */
+        .bottom-section { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-bottom: 10px; }
+        .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .nav-btn { background: white; border: 1px solid #eee; padding: 12px; border-radius: 15px; font-size: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
+        .btn-sub { font-size: 13px; background: #f1f2f6; color: #57606f; font-weight: bold; }
         
-        /* 管理抽屜移到最下面 */
-        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; }
-        .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; gap: 12px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
+        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 10px; border-radius: 10px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
         .admin-panel.active { display: flex; }
-        .editing { border-top-color: var(--warning); background: #fffdf5; }
-        
-        input { padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; }
-        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        .btn { border: none; border-radius: 10px; padding: 12px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
         .btn-add { background: var(--primary); }
-        .btn-save { background: var(--success); flex: 2; }
-        .btn-cancel { background: #95a5a6; flex: 1; }
         .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 90; }
         .overlay.active { display: block; }
     </style>
@@ -54,6 +57,11 @@
 <body>
 
     <div class="app-container">
+        <div class="mode-tabs">
+            <button id="tab-study" class="tab-btn active" onclick="switchMode('study')">📖 學習模式</button>
+            <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">🎯 挑戰模式</button>
+        </div>
+
         <div class="top-bar">
             <select id="catFilter" onchange="changeCategoryFilter()">
                 <option value="all">📁 全部單字</option>
@@ -65,15 +73,14 @@
             </div>
         </div>
 
-        <div class="card-area">
+        <div id="study-view" class="card-area">
             <div class="card" id="flashcard" onclick="flipCard()">
                 <div class="card-inner">
                     <div class="card-front">
                         <span id="cat-display" class="cat-tag">未分類</span>
-                        <span id="fav-label" class="fav-status">已收藏</span>
                         <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
                         <div id="word-display">尚未新增</div>
-                        <button style="margin-top:40px; border:none; background:#f1f2f6; padding:12px 25px; border-radius:25px; font-size:14px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
+                        <button style="margin-top:30px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:13px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
                     </div>
                     <div class="card-back">
                         <div id="meaning-display">意思</div>
@@ -82,14 +89,25 @@
             </div>
         </div>
 
+        <div id="quiz-view" class="card-area">
+            <div class="quiz-box">
+                <div id="quiz-jp" style="font-size: 3rem; font-weight: bold;">?</div>
+                <div id="quiz-ans-area" class="ans-text"></div>
+            </div>
+            <div style="width: 100%; display: flex; gap: 10px;">
+                <button class="nav-btn" style="flex:1; background: #e2e8f0; font-size: 16px;" onclick="showQuizAnswer()">👁️ 看答案</button>
+                <button class="nav-btn" style="flex:1; background: var(--success); color: white; font-size: 16px;" onclick="nextQuiz()">下一個 ➡️</button>
+            </div>
+        </div>
+
         <div class="bottom-section">
-            <div class="nav-controls">
+            <div id="study-controls" class="nav-controls">
                 <button class="nav-btn" onclick="prevWord()">⬅️</button>
                 <button class="nav-btn" onclick="nextWord()">➡️</button>
-                <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正單字</button>
+                <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正</button>
                 <button class="nav-btn btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除</button>
             </div>
-            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字</button>
+            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字 / 備份</button>
         </div>
     </div>
 
@@ -99,7 +117,7 @@
             <b id="panelTitle">新增單字</b>
             <button onclick="toggleAdmin()" style="background:none; border:none; font-size:20px; color:#ccc;">✕</button>
         </div>
-        <input type="text" id="catInput" placeholder="分類 (不填即為 未分類)" list="cat-history">
+        <input type="text" id="catInput" placeholder="分類 (例如: 動詞)" list="cat-history">
         <datalist id="cat-history"></datalist>
         <input type="text" id="jpInput" placeholder="日文單字">
         <input type="text" id="cnInput" placeholder="中文意思">
@@ -107,12 +125,12 @@
         <div id="buttonArea">
             <button id="addBtn" class="btn btn-add" style="width:100%" onclick="addWord()">➕ 加入單字本</button>
             <div id="editBtns" style="display:none; gap:10px;">
-                <button class="btn btn-save" onclick="saveEdit()">💾 儲存修改</button>
-                <button class="btn btn-cancel" onclick="cancelEdit()">取消</button>
+                <button class="btn" style="background:var(--success); flex:2" onclick="saveEdit()">💾 儲存</button>
+                <button class="btn" style="background:#95a5a6; flex:1" onclick="cancelEdit()">取消</button>
             </div>
         </div>
         
-        <div style="display:flex; gap:8px; margin-top:5px;">
+        <div style="display:flex; gap:5px; margin-top:5px;">
             <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="shuffleWords()">🔀 亂序</button>
             <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="exportData()">💾 備份</button>
             <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="importData()">📂 匯入</button>
@@ -121,22 +139,45 @@
 
     <script>
         let allWords = [];
-        try { 
-            allWords = JSON.parse(localStorage.getItem('myWords')) || []; 
-            // 自動除重
-            const seen = new Map();
-            allWords = allWords.filter(item => {
-                const prev = seen.get(item.jp);
-                if (prev) {
-                    if (item.cat !== "未分類" && prev.cat === "未分類") { seen.set(item.jp, item); return true; }
-                    return false;
-                }
-                seen.set(item.jp, item); return true;
-            });
-            localStorage.setItem('myWords', JSON.stringify(allWords));
-        } catch(e) { allWords = []; }
+        try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
 
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
+        let currentMode = 'study'; // 'study' or 'quiz'
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('study-view').style.display = (mode === 'study') ? 'flex' : 'none';
+            document.getElementById('study-controls').style.display = (mode === 'study') ? 'grid' : 'none';
+            document.getElementById('quiz-view').style.display = (mode === 'quiz') ? 'flex' : 'none';
+            
+            document.getElementById('tab-study').classList.toggle('active', mode === 'study');
+            document.getElementById('tab-quiz').classList.toggle('active', mode === 'quiz');
+            
+            if (mode === 'quiz') nextQuiz();
+            else render();
+        }
+
+        // 測驗邏輯
+        function nextQuiz() {
+            if (displayList.length === 0) {
+                document.getElementById('quiz-jp').innerText = "請先增加單字";
+                return;
+            }
+            // 隨機跳一個
+            currentIndex = Math.floor(Math.random() * displayList.length);
+            document.getElementById('quiz-jp').innerText = displayList[currentIndex].jp;
+            document.getElementById('quiz-ans-area').innerText = "";
+            render(); // 更新頂部計數
+        }
+
+        function showQuizAnswer() {
+            if (displayList.length > 0) {
+                document.getElementById('quiz-ans-area').innerText = displayList[currentIndex].cn;
+                speakWord();
+            }
+        }
+
+        // --- 以下保留你原有的核心邏輯並優化 ---
 
         let jpVoice = null;
         function findJpVoice() {
@@ -163,16 +204,10 @@
         function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
 
         function updateDisplayList() {
-            if (selectedCategory === "all") {
-                displayList = allWords;
-                document.getElementById('mode-text').innerText = "正在閱讀：全部單字";
-            } else if (selectedCategory === "favorites") {
-                displayList = allWords.filter(w => w.isHard);
-                document.getElementById('mode-text').innerText = "正在閱讀：⭐ 已收藏";
-            } else {
-                displayList = allWords.filter(w => (w.cat || "未分類") === selectedCategory);
-                document.getElementById('mode-text').innerText = `正在閱讀：📁 ${selectedCategory}`;
-            }
+            if (selectedCategory === "all") { displayList = allWords; } 
+            else if (selectedCategory === "favorites") { displayList = allWords.filter(w => w.isHard); } 
+            else { displayList = allWords.filter(w => (w.cat || "未分類") === selectedCategory); }
+            
             if (currentIndex >= displayList.length) currentIndex = 0;
             updateCategoryUI();
             render();
@@ -189,14 +224,30 @@
             history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
         }
 
+        function render() {
+            const counter = document.getElementById('counter'), wordDisp = document.getElementById('word-display'), 
+                  meanDisp = document.getElementById('meaning-display'), catDisp = document.getElementById('cat-display'),
+                  starBtn = document.getElementById('starBtn');
+            
+            counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
+            if (displayList.length === 0) {
+                wordDisp.innerText = "空"; meanDisp.innerText = ""; return;
+            }
+            const current = displayList[currentIndex];
+            wordDisp.innerText = current.jp; 
+            meanDisp.innerText = current.cn;
+            catDisp.innerText = current.cat || "未分類";
+            starBtn.classList.toggle('active', current.isHard);
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
         function addWord() {
             const cat = document.getElementById('catInput').value.trim() || "未分類";
             const jp = document.getElementById('jpInput').value.trim();
             const cn = document.getElementById('cnInput').value.trim();
             if (jp && cn) {
                 allWords.push({ jp, cn, cat, isHard: false, id: Date.now() });
-                save(); selectedCategory = cat; updateDisplayList();
-                currentIndex = displayList.length - 1; render(); speakWord();
+                save(); updateDisplayList();
                 document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = ''; toggleAdmin();
             }
         }
@@ -208,50 +259,25 @@
             document.getElementById('catInput').value = current.cat || "未分類";
             document.getElementById('jpInput').value = current.jp;
             document.getElementById('cnInput').value = current.cn;
-            document.getElementById('panelTitle').innerText = "✏️ 正在修正內容";
             document.getElementById('addBtn').style.display = 'none';
             document.getElementById('editBtns').style.display = 'flex';
-            document.getElementById('adminPanel').classList.add('active', 'editing');
-            document.getElementById('overlay').classList.add('active');
+            toggleAdmin();
         }
 
         function saveEdit() {
             const idx = allWords.findIndex(w => w.id === editTargetId);
             if (idx !== -1) {
-                const newCat = document.getElementById('catInput').value.trim() || "未分類";
-                allWords[idx] = {...allWords[idx], cat: newCat, jp: document.getElementById('jpInput').value.trim(), cn: document.getElementById('cnInput').value.trim()};
-                save(); selectedCategory = newCat; cancelEdit(); updateDisplayList();
-                currentIndex = displayList.findIndex(w => w.id === editTargetId);
-                render();
-                if(document.getElementById('adminPanel').classList.contains('active')) toggleAdmin();
+                allWords[idx].cat = document.getElementById('catInput').value.trim() || "未分類";
+                allWords[idx].jp = document.getElementById('jpInput').value.trim();
+                allWords[idx].cn = document.getElementById('cnInput').value.trim();
+                save(); updateDisplayList(); cancelEdit(); toggleAdmin();
             }
         }
 
         function cancelEdit() {
-            editTargetId = null;
-            document.getElementById('panelTitle').innerText = "新增單字";
             document.getElementById('addBtn').style.display = 'block';
             document.getElementById('editBtns').style.display = 'none';
-            document.getElementById('adminPanel').classList.remove('editing');
             document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
-        }
-
-        function render() {
-            const counter = document.getElementById('counter'), wordDisp = document.getElementById('word-display'), 
-                  meanDisp = document.getElementById('meaning-display'), catDisp = document.getElementById('cat-display'),
-                  starBtn = document.getElementById('starBtn'), favLabel = document.getElementById('fav-label');
-            counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
-            if (displayList.length === 0) {
-                wordDisp.innerText = selectedCategory === 'favorites' ? "無收藏" : "空空如也";
-                meanDisp.innerText = ""; catDisp.innerText = "-"; favLabel.style.display = "none";
-                starBtn.classList.remove('active'); return;
-            }
-            const current = displayList[currentIndex];
-            wordDisp.innerText = current.jp; meanDisp.innerText = current.cn;
-            catDisp.innerText = current.cat || "未分類";
-            if (current.isHard) { starBtn.classList.add('active'); favLabel.style.display = "block"; } 
-            else { starBtn.classList.remove('active'); favLabel.style.display = "none"; }
-            document.getElementById('flashcard').classList.remove('flipped');
         }
 
         function deleteWord() {
@@ -264,13 +290,11 @@
         function togglePin(e) {
             e.stopPropagation();
             displayList[currentIndex].isHard = !displayList[currentIndex].isHard;
-            save(); 
-            if (selectedCategory === 'favorites') updateDisplayList();
-            else render();
+            save(); render();
         }
 
         function changeCategoryFilter() { selectedCategory = document.getElementById('catFilter').value; currentIndex = 0; updateDisplayList(); }
-        function shuffleWords() { displayList.sort(() => Math.random() - 0.5); currentIndex = 0; render(); toggleAdmin(); }
+        function shuffleWords() { allWords.sort(() => Math.random() - 0.5); save(); updateDisplayList(); toggleAdmin(); }
         function save() { localStorage.setItem('myWords', JSON.stringify(allWords)); }
         function nextWord() { if(displayList.length > 0) { currentIndex = (currentIndex + 1) % displayList.length; render(); } }
         function prevWord() { if(displayList.length > 0) { currentIndex = (currentIndex - 1 + displayList.length) % displayList.length; render(); } }

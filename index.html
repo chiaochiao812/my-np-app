@@ -16,7 +16,7 @@
             display: flex; flex-direction: column; 
             align-items: center; 
             overflow-x: hidden;
-            overflow-y: auto; 
+            overflow-y: auto;
             box-sizing: border-box;
         }
 
@@ -64,14 +64,15 @@
         .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 15px; }
         .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.03); }
 
-        /* --- 修正：調降高度並加入安全區域 --- */
+        /* --- 關鍵修正：調整底部間距 --- */
         .bottom-section { 
             width: 100%; display: flex; flex-direction: column; 
-            padding-bottom: calc(35px + env(safe-area-inset-bottom)); 
-            margin-top: auto;
+            /* 縮小下方空間，並避開系統欄位 */
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
+            margin-top: auto; 
         } 
         
-        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; } 
         .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 12px; border: none; border-radius: 12px; cursor: pointer; }
         .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 15px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
 
@@ -86,8 +87,222 @@
     </style>
 </head>
 <body>
-    ```
 
-主要改動說明：
-1. **`.bottom-section`**: 將 `padding-bottom` 從 `140px` 改為 `calc(35px + env(safe-area-inset-bottom))`。這會讓按鈕區塊靠近底部，但保留足夠的安全距離。
-2. **`.card-area`**: 調整了 `padding` 讓版面在按鈕下移後依然維持視覺平衡。
+    <div class="app-container">
+        <div class="header-section">
+            <div class="version-tag">V1.6-版面優化版</div>
+            <div class="mode-tabs">
+                <button id="tab-study" class="tab-btn active" onclick="switchMode('study')">📖 學習模式</button>
+                <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">🎯 挑戰模式</button>
+            </div>
+            <div class="top-bar">
+                <select id="catFilter" onchange="changeCategoryFilter()">
+                    <option value="all">📁 全部單字</option>
+                    <option value="favorites">⭐ 已收藏</option>
+                </select>
+                <div class="stats-row">
+                    <span id="counter">0 / 0</span>
+                    <span id="mode-text">閱讀中：全部</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="study-view" class="card-area">
+            <div class="card" id="flashcard" onclick="flipCard()">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <span id="cat-display" class="cat-tag">未分類</span>
+                        <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
+                        <div id="word-display">尚未新增</div>
+                        <button style="margin-top:20px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
+                    </div>
+                    <div class="card-back">
+                        <div id="meaning-display">意思</div>
+                    </div>
+                </div>
+            </div>
+            <div id="nav-arrows" class="nav-row">
+                <button class="nav-btn" onclick="prevWord()">⬅️</button>
+                <button class="nav-btn" onclick="nextWord()">➡️</button>
+            </div>
+        </div>
+
+        <div id="quiz-view" class="card-area" style="display:none;">
+            <div style="background: white; width: 100%; padding: 40px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                <div id="quiz-jp" style="font-size: 2.8rem; font-weight: bold;">?</div>
+                <div id="quiz-ans-area" style="font-size: 22px; color: var(--success); margin-top: 15px; min-height: 30px; font-weight: bold;"></div>
+            </div>
+            <div class="nav-row">
+                <button class="nav-btn" style="background: #e2e8f0; font-size: 16px;" onclick="showQuizAnswer()">👁️ 答案</button>
+                <button class="nav-btn" style="background: var(--success); color: white; font-size: 16px;" onclick="nextQuiz()">下一個</button>
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div id="edit-actions" class="action-row">
+                <button class="btn-sub" onclick="startEdit()">✏️ 修正單字</button>
+                <button class="btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除單字</button>
+            </div>
+            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字 / 備份</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeAdmin()"></div>
+    <div id="adminPanel" class="admin-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <b id="panelTitle">新增單字</b>
+            <button onclick="closeAdmin()" style="background:none; border:none; font-size:28px; color:#ccc;">✕</button>
+        </div>
+        <input type="text" id="catInput" placeholder="分類 (例如: N5)" list="cat-history">
+        <datalist id="cat-history"></datalist>
+        <input type="text" id="jpInput" placeholder="日文單字">
+        <input type="text" id="cnInput" placeholder="中文意思">
+        <div class="util-row">
+            <button class="btn-util" onclick="shuffleWords()">🔀 亂序</button>
+            <button class="btn-util" onclick="exportData()">💾 備份</button>
+            <button class="btn-util" onclick="importData()">📂 匯入</button>
+        </div>
+        <div id="buttonArea">
+            <button id="addBtn" class="btn-main" onclick="addWord()">➕ 加入單字本</button>
+            <div id="editBtns" style="display:none; gap:10px;">
+                <button class="btn-main" style="background:var(--success); flex:2" onclick="saveEdit()">💾 儲存修改</button>
+                <button class="btn-main" style="background:#95a5a6; flex:1" onclick="cancelEdit()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allWords = [];
+        try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
+        let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
+        let currentMode = 'study';
+
+        let jpVoice = null;
+        function findJpVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            jpVoice = voices.find(v => v.lang.toLowerCase().includes('ja')) || voices.find(v => v.lang === 'ja-JP');
+        }
+        window.speechSynthesis.onvoiceschanged = findJpVoice;
+        findJpVoice();
+
+        function speakWord(e) {
+            if (e) e.stopPropagation();
+            if (displayList.length === 0) return;
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
+            if (jpVoice) utter.voice = jpVoice;
+            utter.lang = 'ja-JP'; utter.rate = 0.8; window.speechSynthesis.speak(utter);
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('study-view').style.display = (mode === 'study') ? 'flex' : 'none';
+            document.getElementById('quiz-view').style.display = (mode === 'quiz') ? 'flex' : 'none';
+            document.getElementById('edit-actions').style.display = (mode === 'study') ? 'grid' : 'none';
+            document.getElementById('tab-study').classList.toggle('active', mode === 'study');
+            document.getElementById('tab-quiz').classList.toggle('active', mode === 'quiz');
+            if (mode === 'quiz') nextQuiz(); else render();
+        }
+
+        function toggleAdmin() { document.getElementById('adminPanel').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+        function closeAdmin() { document.getElementById('adminPanel').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); cancelEdit(); }
+
+        function nextQuiz() {
+            if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請新增"; return; }
+            currentIndex = Math.floor(Math.random() * displayList.length);
+            document.getElementById('quiz-jp').innerText = displayList[currentIndex].jp;
+            document.getElementById('quiz-ans-area').innerText = "";
+            render();
+        }
+
+        function showQuizAnswer() {
+            if (displayList.length > 0) {
+                document.getElementById('quiz-ans-area').innerText = displayList[currentIndex].cn;
+                speakWord();
+            }
+        }
+
+        function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+
+        function updateDisplayList() {
+            if (selectedCategory === "all") { displayList = allWords; } 
+            else if (selectedCategory === "favorites") { displayList = allWords.filter(w => w.isHard); } 
+            else { displayList = allWords.filter(w => (w.cat || "未分類") === selectedCategory); }
+            if (currentIndex >= displayList.length) currentIndex = 0;
+            updateCategoryUI(); render();
+        }
+
+        function updateCategoryUI() {
+            const filter = document.getElementById('catFilter');
+            const history = document.getElementById('cat-history');
+            const cats = [...new Set(allWords.map(w => w.cat || "未分類"))];
+            let html = '<option value="all">📁 全部單字</option><option value="favorites">⭐ 已收藏</option><option disabled>───</option>';
+            cats.forEach(c => { html += `<option value="${c}">📁 ${c}</option>`; });
+            filter.innerHTML = html; filter.value = selectedCategory;
+            history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+        }
+
+        function render() {
+            const counter = document.getElementById('counter'), wordDisp = document.getElementById('word-display'), 
+                  meanDisp = document.getElementById('meaning-display'), catDisp = document.getElementById('cat-display'),
+                  starBtn = document.getElementById('starBtn');
+            counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
+            if (displayList.length === 0) { wordDisp.innerText = "空"; meanDisp.innerText = ""; return; }
+            const current = displayList[currentIndex];
+            wordDisp.innerText = current.jp; meanDisp.innerText = current.cn;
+            catDisp.innerText = current.cat || "未分類";
+            starBtn.classList.toggle('active', current.isHard);
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        function addWord() {
+            const jp = document.getElementById('jpInput').value.trim(), cn = document.getElementById('cnInput').value.trim(), cat = document.getElementById('catInput').value.trim() || "未分類";
+            if (jp && cn) {
+                allWords.push({ jp, cn, cat, isHard: false, id: Date.now() });
+                save(); updateDisplayList();
+                document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = ''; closeAdmin();
+            }
+        }
+
+        function save() { localStorage.setItem('myWords', JSON.stringify(allWords)); }
+        function nextWord() { if(displayList.length > 0) { currentIndex = (currentIndex + 1) % displayList.length; render(); } }
+        function prevWord() { if(displayList.length > 0) { currentIndex = (currentIndex - 1 + displayList.length) % displayList.length; render(); } }
+        function togglePin(e) { e.stopPropagation(); displayList[currentIndex].isHard = !displayList[currentIndex].isHard; save(); render(); }
+        function changeCategoryFilter() { selectedCategory = document.getElementById('catFilter').value; currentIndex = 0; updateDisplayList(); }
+        function shuffleWords() { allWords.sort(() => Math.random() - 0.5); save(); updateDisplayList(); closeAdmin(); }
+        function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
+        function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
+        function deleteWord() { if (displayList.length > 0 && confirm("確定刪除此單字？")) { allWords = allWords.filter(w => w.id !== displayList[currentIndex].id); save(); updateDisplayList(); } }
+        function startEdit() {
+            if (displayList.length === 0) return;
+            const current = displayList[currentIndex];
+            editTargetId = current.id;
+            document.getElementById('catInput').value = current.cat || "未分類";
+            document.getElementById('jpInput').value = current.jp;
+            document.getElementById('cnInput').value = current.cn;
+            document.getElementById('panelTitle').innerText = "✏️ 修正內容";
+            document.getElementById('addBtn').style.display = 'none';
+            document.getElementById('editBtns').style.display = 'flex';
+            toggleAdmin();
+        }
+        function saveEdit() {
+            const idx = allWords.findIndex(w => w.id === editTargetId);
+            if (idx !== -1) {
+                allWords[idx].cat = document.getElementById('catInput').value.trim() || "未分類";
+                allWords[idx].jp = document.getElementById('jpInput').value.trim();
+                allWords[idx].cn = document.getElementById('cnInput').value.trim();
+                save(); updateDisplayList(); closeAdmin();
+            }
+        }
+        function cancelEdit() {
+            editTargetId = null;
+            document.getElementById('panelTitle').innerText = "新增單字";
+            document.getElementById('addBtn').style.display = 'block';
+            document.getElementById('editBtns').style.display = 'none';
+            document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
+        }
+
+        updateDisplayList();
+    </script>
+</body>
+</html>

@@ -4,88 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>日文單字 App - 佈局優化版</title>
+    <title>日文單字 App - 置中優化版</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; }
-        .app-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; flex-grow: 1; }
         
-        /* 頂部切換 */
-        .mode-tabs { display: flex; width: 100%; gap: 8px; margin-bottom: 10px; }
-        .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        /* 讓身體撐滿全螢幕，不產生滾動條 */
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            width: 100vw;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            overflow: hidden; 
+            box-sizing: border-box;
+        }
 
+        .app-container { 
+            width: 92%; 
+            max-width: 400px; 
+            height: 100%;
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        /* 頂部區域 */
+        .header-section { padding-top: 15px; width: 100%; }
+        .mode-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .tab-btn.active { background: var(--primary); color: white; }
         .top-bar { width: 100%; margin-bottom: 5px; }
-        select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--primary); font-size: 15px; background: white; outline: none; }
+        select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); font-size: 15px; background: white; outline: none; }
         .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #a4b0be; padding: 4px; }
 
-        /* --- 調整：單字卡往下靠一點 --- */
-        .card-area { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 40px; } /* 增加頂部間距 */
-        .card { width: 100%; height: 210px; perspective: 1000px; }
+        /* --- 單字卡區域：利用 flex-grow 實現垂直置中 --- */
+        .card-area { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; /* 讓內容在正中央 */
+            width: 100%;
+        }
+
+        .card { width: 100%; height: 230px; perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 20px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 25px; background: white; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eee; }
         .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); }
         
-        #word-display { font-size: 2.3rem; font-weight: bold; color: #2f3542; text-align: center; }
-        #meaning-display { font-size: 1.8rem; text-align: center; }
-        .cat-tag { position: absolute; top: 12px; left: 15px; font-size: 10px; color: #bdc3c7; }
-        .star-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; color: #eee; background: none; border: none; cursor: pointer; }
+        #word-display { font-size: 2.6rem; font-weight: bold; color: #2f3542; text-align: center; }
+        #meaning-display { font-size: 2.2rem; text-align: center; }
+        .cat-tag { position: absolute; top: 15px; left: 20px; font-size: 11px; color: #bdc3c7; }
+        .star-btn { position: absolute; top: 12px; right: 15px; font-size: 28px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 導覽按鈕：緊貼單字下方 */
-        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 10px; }
+        /* 導覽按鈕緊跟在單字下方 */
+        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 15px; }
+        .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.03); }
 
-        /* 挑戰模式盒子 */
-        .quiz-box { background: white; width: 100%; padding: 25px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; text-align: center; box-sizing: border-box;}
-
-        /* --- 調整：最下排往上移 --- */
+        /* --- 底部控制區：往上抬升 --- */
         .bottom-section { 
             width: 100%; 
             display: flex; 
             flex-direction: column; 
-            margin-top: auto; 
-            padding-bottom: 80px; /* 大幅增加底部內邊距，把整塊往上推 */
+            padding-bottom: 110px; /* 大幅增加底部墊高，讓按鈕浮上來 */
         } 
         
-        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 40px; margin-bottom: 15px; } /* 增加與導覽鍵的空白 */
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
+        .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 12px; border: none; border-radius: 12px; cursor: pointer; }
+        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 15px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-        .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 12px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 10px; border: none; }
-        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
+        /* 挑戰模式 */
+        .quiz-box { background: white; width: 100%; padding: 30px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box;}
 
         /* 管理面板 */
-        .admin-panel { display: none; background: white; padding: 20px; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
+        .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 4px solid var(--primary); }
         .admin-panel.active { display: flex; }
-        
-        .admin-panel input { margin-bottom: 10px; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        .admin-panel input { margin-bottom: 10px; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
         .util-row { display: flex; gap: 8px; margin: 15px 0; } 
-        .btn-util { background: #7f8c8d; font-size: 11px; flex: 1; border: none; border-radius: 10px; padding: 10px; color: white; font-weight: bold; cursor: pointer; }
-
-        #buttonArea { margin-top: 5px; margin-bottom: 10px; }
-        .btn-main { width: 100%; border: none; border-radius: 10px; padding: 14px; font-weight: bold; color: white; cursor: pointer; font-size: 16px; }
-        .btn-add { background: var(--primary); }
+        .btn-util { background: #7f8c8d; font-size: 12px; flex: 1; border: none; border-radius: 10px; padding: 12px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-main { width: 100%; border: none; border-radius: 12px; padding: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 16px; background: var(--primary); }
         
-        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 90; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 90; }
         .overlay.active { display: block; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <div class="mode-tabs">
-            <button id="tab-study" class="tab-btn active" onclick="switchMode('study')">📖 學習模式</button>
-            <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">🎯 挑戰模式</button>
-        </div>
-
-        <div class="top-bar">
-            <select id="catFilter" onchange="changeCategoryFilter()">
-                <option value="all">📁 全部單字</option>
-                <option value="favorites">⭐ 已收藏單字</option>
-            </select>
-            <div class="stats-row">
-                <span id="counter">0 / 0</span>
-                <span id="mode-text">閱讀中：全部</span>
+        <div class="header-section">
+            <div class="mode-tabs">
+                <button id="tab-study" class="tab-btn active" onclick="switchMode('study')">📖 學習模式</button>
+                <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">🎯 挑戰模式</button>
+            </div>
+            <div class="top-bar">
+                <select id="catFilter" onchange="changeCategoryFilter()">
+                    <option value="all">📁 全部單字</option>
+                    <option value="favorites">⭐ 已收藏單字</option>
+                </select>
+                <div class="stats-row">
+                    <span id="counter">0 / 0</span>
+                    <span id="mode-text">閱讀中：全部</span>
+                </div>
             </div>
         </div>
 
@@ -96,7 +120,7 @@
                         <span id="cat-display" class="cat-tag">未分類</span>
                         <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
                         <div id="word-display">尚未新增</div>
-                        <button style="margin-top:20px; border:none; background:#f1f2f6; padding:6px 15px; border-radius:15px; font-size:11px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 發音</button>
+                        <button style="margin-top:25px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 語音</button>
                     </div>
                     <div class="card-back">
                         <div id="meaning-display">意思</div>
@@ -112,19 +136,19 @@
 
         <div id="quiz-view" class="card-area" style="display:none;">
             <div class="quiz-box">
-                <div id="quiz-jp" style="font-size: 2.5rem; font-weight: bold;">?</div>
-                <div id="quiz-ans-area" style="font-size: 20px; color: var(--success); margin-top: 15px; min-height: 28px; font-weight: bold;"></div>
+                <div id="quiz-jp" style="font-size: 2.8rem; font-weight: bold;">?</div>
+                <div id="quiz-ans-area" style="font-size: 22px; color: var(--success); margin-top: 15px; min-height: 30px; font-weight: bold;"></div>
             </div>
-            <div style="width: 100%; display: flex; gap: 10px;">
-                <button class="nav-btn" style="flex:1; background: #e2e8f0; font-size: 15px;" onclick="showQuizAnswer()">👁️ 看答案</button>
-                <button class="nav-btn" style="flex:1; background: var(--success); color: white; font-size: 15px;" onclick="nextQuiz()">下一個 ➡️</button>
+            <div class="nav-row">
+                <button class="nav-btn" style="background: #e2e8f0; font-size: 16px;" onclick="showQuizAnswer()">👁️ 答案</button>
+                <button class="nav-btn" style="background: var(--success); color: white; font-size: 16px;" onclick="nextQuiz()">下一個</button>
             </div>
         </div>
 
         <div class="bottom-section">
             <div id="edit-actions" class="action-row">
-                <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正單字</button>
-                <button class="nav-btn btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除單字</button>
+                <button class="btn-sub" onclick="startEdit()">✏️ 修正單字</button>
+                <button class="btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除單字</button>
             </div>
             <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字 / 備份</button>
         </div>
@@ -134,22 +158,19 @@
     <div id="adminPanel" class="admin-panel">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <b id="panelTitle">新增單字</b>
-            <button onclick="closeAdmin()" style="background:none; border:none; font-size:24px; color:#ccc; padding:5px;">✕</button>
+            <button onclick="closeAdmin()" style="background:none; border:none; font-size:28px; color:#ccc;">✕</button>
         </div>
-        
         <input type="text" id="catInput" placeholder="分類 (例如: N5)" list="cat-history">
         <datalist id="cat-history"></datalist>
         <input type="text" id="jpInput" placeholder="日文單字">
         <input type="text" id="cnInput" placeholder="中文意思">
-        
         <div class="util-row">
             <button class="btn-util" onclick="shuffleWords()">🔀 亂序</button>
             <button class="btn-util" onclick="exportData()">💾 備份</button>
             <button class="btn-util" onclick="importData()">📂 匯入</button>
         </div>
-        
         <div id="buttonArea">
-            <button id="addBtn" class="btn-main btn-add" onclick="addWord()">➕ 加入單字本</button>
+            <button id="addBtn" class="btn-main" onclick="addWord()">➕ 加入單字本</button>
             <div id="editBtns" style="display:none; gap:10px;">
                 <button class="btn-main" style="background:var(--success); flex:2" onclick="saveEdit()">💾 儲存修改</button>
                 <button class="btn-main" style="background:#95a5a6; flex:1" onclick="cancelEdit()">取消</button>
@@ -158,6 +179,7 @@
     </div>
 
     <script>
+        // 核心邏輯 (不變)
         let allWords = [];
         try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
@@ -177,7 +199,7 @@
         function closeAdmin() { document.getElementById('adminPanel').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); cancelEdit(); }
 
         function nextQuiz() {
-            if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請先增加單字"; return; }
+            if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請先新增"; return; }
             currentIndex = Math.floor(Math.random() * displayList.length);
             document.getElementById('quiz-jp').innerText = displayList[currentIndex].jp;
             document.getElementById('quiz-ans-area').innerText = "";
@@ -213,7 +235,7 @@
             const filter = document.getElementById('catFilter');
             const history = document.getElementById('cat-history');
             const cats = [...new Set(allWords.map(w => w.cat || "未分類"))];
-            let html = '<option value="all">📁 全部單字</option><option value="favorites">⭐ 已收藏單字</option><option disabled>──────────</option>';
+            let html = '<option value="all">📁 全部單字</option><option value="favorites">⭐ 已收藏</option><option disabled>───</option>';
             cats.forEach(c => { html += `<option value="${c}">📁 ${c}</option>`; });
             filter.innerHTML = html; filter.value = selectedCategory;
             history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
@@ -252,7 +274,6 @@
         function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
         function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
         function deleteWord() { if (displayList.length > 0 && confirm("確定刪除此單字？")) { allWords = allWords.filter(w => w.id !== displayList[currentIndex].id); save(); updateDisplayList(); } }
-        
         function startEdit() {
             if (displayList.length === 0) return;
             const current = displayList[currentIndex];

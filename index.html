@@ -7,41 +7,48 @@
     <title>日文單字 App</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .app-container { width: 100%; max-width: 400px; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; flex-grow: 1; }
         
-        .top-bar { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-        select { width: 100%; padding: 14px; border-radius: 15px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; background: white; outline: none; }
-        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #7f8c8d; padding: 0 5px; margin-top: 5px; }
+        /* 頂部僅保留篩選與統計 */
+        .top-bar { width: 100%; margin-bottom: 10px; }
+        select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; background: white; outline: none; }
+        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a4b0be; padding: 5px; }
 
-        .admin-toggle { width: 100%; background: #ecedf0; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        .admin-panel { display: none; background: white; padding: 18px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-top: 12px; flex-direction: column; gap: 10px; border: 2px solid transparent; }
-        .admin-panel.active { display: flex; }
-        .editing { border: 3px solid var(--warning); background: #fffdf0; }
-        
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        .btn { border: none; border-radius: 10px; padding: 12px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
-        .btn-add { background: var(--primary); width: 100%; }
-        .btn-save { background: var(--success); flex: 2; }
-        .btn-cancel { background: #95a5a6; flex: 1; }
-
-        .card { width: 100%; height: 260px; perspective: 1000px; margin: 15px 0; }
+        /* 中間閃卡 */
+        .card-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
+        .card { width: 100%; height: 280px; perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); }
         
-        #word-display { font-size: 2.6rem; font-weight: bold; color: #2f3542; text-align: center; width: 90%; line-height: 1.2; }
-        #meaning-display { font-size: 2rem; text-align: center; }
+        #word-display { font-size: 2.8rem; font-weight: bold; color: #2f3542; text-align: center; width: 90%; }
+        #meaning-display { font-size: 2.2rem; text-align: center; }
         .cat-tag { position: absolute; top: 20px; left: 25px; font-size: 12px; color: #bdc3c7; font-weight: bold; }
-        .fav-status { position: absolute; top: 20px; right: 55px; font-size: 11px; color: var(--warning); font-weight: bold; display: none; }
-        .star-btn { position: absolute; top: 12px; right: 20px; font-size: 30px; color: #eee; background: none; border: none; padding: 5px; cursor: pointer; }
+        .fav-status { position: absolute; top: 20px; right: 60px; font-size: 11px; color: var(--warning); font-weight: bold; display: none; }
+        .star-btn { position: absolute; top: 12px; right: 20px; font-size: 32px; color: #eee; background: none; border: none; padding: 5px; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 10px; }
-        .nav-btn { background: #ffffff; border: 1px solid #f0f0f0; padding: 16px; border-radius: 18px; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .btn-sub { font-size: 14px; background: #f8f9fa; color: #7f8c8d; font-weight: bold; }
-        .btn-del { color: var(--danger); }
+        /* 底部操作區 */
+        .bottom-section { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-bottom: 20px; }
+        .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .nav-btn { background: white; border: 1px solid #eee; padding: 18px; border-radius: 18px; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; }
+        .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: bold; }
+        
+        /* 管理抽屜移到最下面 */
+        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; }
+        .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; gap: 12px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
+        .admin-panel.active { display: flex; }
+        .editing { border-top-color: var(--warning); background: #fffdf5; }
+        
+        input { padding: 14px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; }
+        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: bold; color: white; cursor: pointer; text-align: center; }
+        .btn-add { background: var(--primary); }
+        .btn-save { background: var(--success); flex: 2; }
+        .btn-cancel { background: #95a5a6; flex: 1; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 90; }
+        .overlay.active { display: block; }
     </style>
 </head>
 <body>
@@ -52,56 +59,63 @@
                 <option value="all">📁 全部單字</option>
                 <option value="favorites">⭐ 已收藏單字</option>
             </select>
-            
             <div class="stats-row">
                 <span id="counter">0 / 0</span>
-                <span id="mode-text">正在載入...</span>
+                <span id="mode-text">正在閱讀：全部</span>
             </div>
-            
-            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字</button>
-            <div id="adminPanel" class="admin-panel">
-                <b id="panelTitle">新增單字</b>
-                <input type="text" id="catInput" placeholder="分類 (不填即為 未分類)" list="cat-history">
-                <datalist id="cat-history"></datalist>
-                <input type="text" id="jpInput" placeholder="日文">
-                <input type="text" id="cnInput" placeholder="中文意思">
-                
-                <div id="buttonArea">
-                    <button id="addBtn" class="btn btn-add" onclick="addWord()">➕ 加入單字本</button>
-                    <div id="editBtns" style="display:none; gap:10px;">
-                        <button class="btn btn-save" onclick="saveEdit()">💾 儲存修改 (覆蓋舊資料)</button>
-                        <button class="btn btn-cancel" onclick="cancelEdit()">取消</button>
+        </div>
+
+        <div class="card-area">
+            <div class="card" id="flashcard" onclick="flipCard()">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <span id="cat-display" class="cat-tag">未分類</span>
+                        <span id="fav-label" class="fav-status">已收藏</span>
+                        <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
+                        <div id="word-display">尚未新增</div>
+                        <button style="margin-top:40px; border:none; background:#f1f2f6; padding:12px 25px; border-radius:25px; font-size:14px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
+                    </div>
+                    <div class="card-back">
+                        <div id="meaning-display">意思</div>
                     </div>
                 </div>
-                
-                <div style="display:flex; gap:5px; margin-top:8px;">
-                    <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="shuffleWords()">🔀 亂序</button>
-                    <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="exportData()">💾 備份</button>
-                    <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="importData()">📂 匯入</button>
-                </div>
             </div>
         </div>
 
-        <div class="card" id="flashcard" onclick="flipCard()">
-            <div class="card-inner">
-                <div class="card-front">
-                    <span id="cat-display" class="cat-tag">未分類</span>
-                    <span id="fav-label" class="fav-status">已收藏</span>
-                    <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
-                    <div id="word-display">尚未新增</div>
-                    <button style="margin-top:35px; border:none; background:#f1f2f6; padding:12px 25px; border-radius:25px; font-size:14px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 發音</button>
-                </div>
-                <div class="card-back">
-                    <div id="meaning-display">意思</div>
-                </div>
+        <div class="bottom-section">
+            <div class="nav-controls">
+                <button class="nav-btn" onclick="prevWord()">⬅️</button>
+                <button class="nav-btn" onclick="nextWord()">➡️</button>
+                <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正單字</button>
+                <button class="nav-btn btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除</button>
+            </div>
+            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
+    <div id="adminPanel" class="admin-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <b id="panelTitle">新增單字</b>
+            <button onclick="toggleAdmin()" style="background:none; border:none; font-size:20px; color:#ccc;">✕</button>
+        </div>
+        <input type="text" id="catInput" placeholder="分類 (不填即為 未分類)" list="cat-history">
+        <datalist id="cat-history"></datalist>
+        <input type="text" id="jpInput" placeholder="日文單字">
+        <input type="text" id="cnInput" placeholder="中文意思">
+        
+        <div id="buttonArea">
+            <button id="addBtn" class="btn btn-add" style="width:100%" onclick="addWord()">➕ 加入單字本</button>
+            <div id="editBtns" style="display:none; gap:10px;">
+                <button class="btn btn-save" onclick="saveEdit()">💾 儲存修改</button>
+                <button class="btn btn-cancel" onclick="cancelEdit()">取消</button>
             </div>
         </div>
-
-        <div class="nav-controls">
-            <button class="nav-btn" onclick="prevWord()">⬅️</button>
-            <button class="nav-btn" onclick="nextWord()">➡️</button>
-            <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正此單字</button>
-            <button class="nav-btn btn-sub btn-del" onclick="deleteWord()">🗑️ 刪除</button>
+        
+        <div style="display:flex; gap:8px; margin-top:5px;">
+            <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="shuffleWords()">🔀 亂序</button>
+            <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="exportData()">💾 備份</button>
+            <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1" onclick="importData()">📂 匯入</button>
         </div>
     </div>
 
@@ -109,19 +123,15 @@
         let allWords = [];
         try { 
             allWords = JSON.parse(localStorage.getItem('myWords')) || []; 
-            // 【資料清理功能】如果有一樣的日文，保留有分類的那一個，刪掉沒分類的
+            // 自動除重
             const seen = new Map();
             allWords = allWords.filter(item => {
                 const prev = seen.get(item.jp);
                 if (prev) {
-                    if (item.cat !== "未分類" && prev.cat === "未分類") {
-                        seen.set(item.jp, item);
-                        return true;
-                    }
+                    if (item.cat !== "未分類" && prev.cat === "未分類") { seen.set(item.jp, item); return true; }
                     return false;
                 }
-                seen.set(item.jp, item);
-                return true;
+                seen.set(item.jp, item); return true;
             });
             localStorage.setItem('myWords', JSON.stringify(allWords));
         } catch(e) { allWords = []; }
@@ -145,7 +155,11 @@
             utter.lang = 'ja-JP'; utter.rate = 0.85; window.speechSynthesis.speak(utter);
         }
 
-        function toggleAdmin() { document.getElementById('adminPanel').classList.toggle('active'); }
+        function toggleAdmin() { 
+            document.getElementById('adminPanel').classList.toggle('active'); 
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
         function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
 
         function updateDisplayList() {
@@ -187,43 +201,27 @@
             }
         }
 
-        // --- 核心修改：開始編輯 ---
         function startEdit() {
             if (displayList.length === 0) return;
             const current = displayList[currentIndex];
-            editTargetId = current.id; // 鎖定 ID
-            
+            editTargetId = current.id;
             document.getElementById('catInput').value = current.cat || "未分類";
             document.getElementById('jpInput').value = current.jp;
             document.getElementById('cnInput').value = current.cn;
-            
-            document.getElementById('panelTitle').innerText = "✏️ 修正目前的單字";
+            document.getElementById('panelTitle').innerText = "✏️ 正在修正內容";
             document.getElementById('addBtn').style.display = 'none';
             document.getElementById('editBtns').style.display = 'flex';
             document.getElementById('adminPanel').classList.add('active', 'editing');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('overlay').classList.add('active');
         }
 
-        // --- 核心修改：儲存並覆蓋舊資料 ---
         function saveEdit() {
-            if (!editTargetId) return;
             const idx = allWords.findIndex(w => w.id === editTargetId);
-            
             if (idx !== -1) {
                 const newCat = document.getElementById('catInput').value.trim() || "未分類";
-                // 直接修改原陣列中的那一筆，不增加新項目
-                allWords[idx].cat = newCat;
-                allWords[idx].jp = document.getElementById('jpInput').value.trim();
-                allWords[idx].cn = document.getElementById('cnInput').value.trim();
-                
-                save(); 
-                selectedCategory = newCat; 
-                cancelEdit(); 
-                updateDisplayList(); 
-                
-                // 讓畫面停在剛剛修改完的那一個
+                allWords[idx] = {...allWords[idx], cat: newCat, jp: document.getElementById('jpInput').value.trim(), cn: document.getElementById('cnInput').value.trim()};
+                save(); selectedCategory = newCat; cancelEdit(); updateDisplayList();
                 currentIndex = displayList.findIndex(w => w.id === editTargetId);
-                if (currentIndex === -1) currentIndex = 0;
                 render();
                 if(document.getElementById('adminPanel').classList.contains('active')) toggleAdmin();
             }
@@ -235,9 +233,7 @@
             document.getElementById('addBtn').style.display = 'block';
             document.getElementById('editBtns').style.display = 'none';
             document.getElementById('adminPanel').classList.remove('editing');
-            document.getElementById('catInput').value = ''; 
-            document.getElementById('jpInput').value = ''; 
-            document.getElementById('cnInput').value = '';
+            document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
         }
 
         function render() {
@@ -246,7 +242,8 @@
                   starBtn = document.getElementById('starBtn'), favLabel = document.getElementById('fav-label');
             counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
             if (displayList.length === 0) {
-                wordDisp.innerText = "清單空空如也"; meanDisp.innerText = ""; catDisp.innerText = "-"; favLabel.style.display = "none";
+                wordDisp.innerText = selectedCategory === 'favorites' ? "無收藏" : "空空如也";
+                meanDisp.innerText = ""; catDisp.innerText = "-"; favLabel.style.display = "none";
                 starBtn.classList.remove('active'); return;
             }
             const current = displayList[currentIndex];
@@ -278,7 +275,7 @@
         function nextWord() { if(displayList.length > 0) { currentIndex = (currentIndex + 1) % displayList.length; render(); } }
         function prevWord() { if(displayList.length > 0) { currentIndex = (currentIndex - 1 + displayList.length) % displayList.length; render(); } }
         function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
-        function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式有誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
+        function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
         
         updateDisplayList();
     </script>

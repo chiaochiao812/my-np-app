@@ -11,12 +11,10 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .app-container { width: 100%; max-width: 400px; }
         
-        /* 頂部導覽 */
         .top-bar { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
         select { width: 100%; padding: 14px; border-radius: 15px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; background: white; outline: none; -webkit-appearance: none; }
         .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #7f8c8d; padding: 0 5px; margin-top: 5px; }
 
-        /* 管理面板 */
         .admin-toggle { width: 100%; background: #ecedf0; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .admin-panel { display: none; background: white; padding: 18px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-top: 12px; flex-direction: column; gap: 10px; border: 2px solid transparent; }
         .admin-panel.active { display: flex; }
@@ -29,7 +27,6 @@
         .btn-save { background: var(--success); }
         .btn-cancel { background: #95a5a6; }
 
-        /* 閃卡區域 */
         .card { width: 100%; height: 260px; perspective: 1000px; margin: 15px 0; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
@@ -43,7 +40,6 @@
         .star-btn { position: absolute; top: 12px; right: 20px; font-size: 30px; color: #eee; background: none; border: none; padding: 5px; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 導覽 */
         .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 10px; }
         .nav-btn { background: #ffffff; border: 1px solid #f0f0f0; padding: 16px; border-radius: 18px; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .btn-sub { font-size: 14px; background: #f8f9fa; color: #7f8c8d; font-weight: bold; }
@@ -69,15 +65,15 @@
                 <b id="panelTitle">新增單字</b>
                 <input type="text" id="catInput" placeholder="分類 (不填即為 未分類)" list="cat-history">
                 <datalist id="cat-history"></datalist>
-                <input type="text" id="jpInput" placeholder="輸入日文">
-                <input type="text" id="cnInput" placeholder="輸入中文意思">
+                <input type="text" id="jpInput" placeholder="日文">
+                <input type="text" id="cnInput" placeholder="中文意思">
                 
                 <div id="addBtns">
                     <button class="btn btn-add" style="width:100%" onclick="addWord()">➕ 加入單字本</button>
                 </div>
                 <div id="editBtns" style="display:none;" class="btn-group">
                     <button class="btn btn-save" onclick="saveEdit()">💾 儲存修改</button>
-                    <button class="btn btn-cancel" onclick="cancelEdit()">取消</button>
+                    <button class="btn btn-cancel" onclick="cancelEdit()">取消修改</button>
                 </div>
                 
                 <div style="display:flex; gap:5px; margin-top:8px;">
@@ -112,25 +108,16 @@
     </div>
 
     <script>
-        // 確保資料正確初始化
         let allWords = [];
-        try {
-            allWords = JSON.parse(localStorage.getItem('myWords')) || [];
-        } catch(e) {
-            allWords = [];
-        }
-
+        try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
 
-        // --- 強制日文發音邏輯 ---
         let jpVoice = null;
         function findJpVoice() {
             const voices = window.speechSynthesis.getVoices();
             jpVoice = voices.find(v => v.lang.toLowerCase().includes('ja')) || voices.find(v => v.lang === 'ja-JP');
         }
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = findJpVoice;
-        }
+        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = findJpVoice;
         findJpVoice();
 
         function speakWord(e) {
@@ -139,31 +126,22 @@
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
             if (jpVoice) utter.voice = jpVoice;
-            utter.lang = 'ja-JP';
-            utter.rate = 0.85;
-            window.speechSynthesis.speak(utter);
+            utter.lang = 'ja-JP'; utter.rate = 0.85; window.speechSynthesis.speak(utter);
         }
 
-        // --- 管理面板開關 ---
-        function toggleAdmin() {
-            const panel = document.getElementById('adminPanel');
-            panel.classList.toggle('active');
-        }
-
-        function flipCard() {
-            document.getElementById('flashcard').classList.toggle('flipped');
-        }
+        function toggleAdmin() { document.getElementById('adminPanel').classList.toggle('active'); }
+        function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
 
         function updateDisplayList() {
             if (selectedCategory === "all") {
                 displayList = allWords;
-                document.getElementById('mode-text').innerText = "正在閱讀：全部單字";
+                document.getElementById('mode-text').innerText = "正在背誦：全部單字";
             } else if (selectedCategory === "favorites") {
                 displayList = allWords.filter(w => w.isHard);
-                document.getElementById('mode-text').innerText = "正在閱讀：⭐ 已收藏";
+                document.getElementById('mode-text').innerText = "正在背誦：⭐ 已收藏";
             } else {
                 displayList = allWords.filter(w => (w.cat || "未分類") === selectedCategory);
-                document.getElementById('mode-text').innerText = `正在閱讀：📁 ${selectedCategory}`;
+                document.getElementById('mode-text').innerText = `正在背誦：📁 ${selectedCategory}`;
             }
             if (currentIndex >= displayList.length) currentIndex = 0;
             updateCategoryUI();
@@ -174,10 +152,8 @@
             const filter = document.getElementById('catFilter');
             const history = document.getElementById('cat-history');
             const cats = [...new Set(allWords.map(w => w.cat || "未分類"))];
-            
             let html = '<option value="all">📁 全部單字</option><option value="favorites">⭐ 已收藏單字</option><option disabled>──────────</option>';
             cats.forEach(c => { html += `<option value="${c}">📁 ${c}</option>`; });
-            
             filter.innerHTML = html;
             filter.value = selectedCategory;
             history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
@@ -189,15 +165,9 @@
             const cn = document.getElementById('cnInput').value.trim();
             if (jp && cn) {
                 allWords.push({ jp, cn, cat, isHard: false, id: Date.now() });
-                save();
-                selectedCategory = cat;
-                updateDisplayList();
-                currentIndex = displayList.length - 1;
-                render();
-                speakWord();
-                document.getElementById('jpInput').value = ''; 
-                document.getElementById('cnInput').value = '';
-                toggleAdmin();
+                save(); selectedCategory = cat; updateDisplayList();
+                currentIndex = displayList.length - 1; render(); speakWord();
+                document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = ''; toggleAdmin();
             }
         }
 
@@ -208,8 +178,7 @@
             document.getElementById('catInput').value = current.cat || "未分類";
             document.getElementById('jpInput').value = current.jp;
             document.getElementById('cnInput').value = current.cn;
-            
-            document.getElementById('panelTitle').innerText = "✏️ 修改中...";
+            document.getElementById('panelTitle').innerText = "✏️ 正在修改中...";
             document.getElementById('addBtns').style.display = 'none';
             document.getElementById('editBtns').style.display = 'flex';
             document.getElementById('adminPanel').classList.add('active', 'editing');
@@ -219,10 +188,20 @@
         function saveEdit() {
             const idx = allWords.findIndex(w => w.id === editTargetId);
             if (idx !== -1) {
-                allWords[idx].cat = document.getElementById('catInput').value.trim() || "未分類";
+                const newCat = document.getElementById('catInput').value.trim() || "未分類";
+                allWords[idx].cat = newCat;
                 allWords[idx].jp = document.getElementById('jpInput').value.trim();
                 allWords[idx].cn = document.getElementById('cnInput').value.trim();
-                save(); cancelEdit(); updateDisplayList(); 
+                save(); 
+                
+                // 【核心修正】儲存後自動切換到該單字的新分類，確保它「搬家」給你看
+                selectedCategory = newCat; 
+                cancelEdit(); 
+                updateDisplayList(); 
+                // 找到該單字在新清單中的位置
+                currentIndex = displayList.findIndex(w => w.id === editTargetId);
+                if (currentIndex === -1) currentIndex = 0;
+                render();
                 if(document.getElementById('adminPanel').classList.contains('active')) toggleAdmin();
             }
         }
@@ -233,35 +212,24 @@
             document.getElementById('addBtns').style.display = 'block';
             document.getElementById('editBtns').style.display = 'none';
             document.getElementById('adminPanel').classList.remove('editing');
-            document.getElementById('catInput').value = ''; 
-            document.getElementById('jpInput').value = ''; 
-            document.getElementById('cnInput').value = '';
+            document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
         }
 
         function render() {
             const counter = document.getElementById('counter'), wordDisp = document.getElementById('word-display'), 
                   meanDisp = document.getElementById('meaning-display'), catDisp = document.getElementById('cat-display'),
                   starBtn = document.getElementById('starBtn'), favLabel = document.getElementById('fav-label');
-            
             counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
-            
             if (displayList.length === 0) {
-                wordDisp.innerText = selectedCategory === 'favorites' ? "目前無收藏" : "尚未新增";
+                wordDisp.innerText = selectedCategory === 'favorites' ? "目前無收藏" : "目前清單為空";
                 meanDisp.innerText = ""; catDisp.innerText = "-"; favLabel.style.display = "none";
                 starBtn.classList.remove('active'); return;
             }
             const current = displayList[currentIndex];
-            wordDisp.innerText = current.jp; 
-            meanDisp.innerText = current.cn;
+            wordDisp.innerText = current.jp; meanDisp.innerText = current.cn;
             catDisp.innerText = current.cat || "未分類";
-            
-            if (current.isHard) {
-                starBtn.classList.add('active');
-                favLabel.style.display = "block";
-            } else {
-                starBtn.classList.remove('active');
-                favLabel.style.display = "none";
-            }
+            if (current.isHard) { starBtn.classList.add('active'); favLabel.style.display = "block"; } 
+            else { starBtn.classList.remove('active'); favLabel.style.display = "none"; }
             document.getElementById('flashcard').classList.remove('flipped');
         }
 
@@ -286,23 +254,9 @@
         function save() { localStorage.setItem('myWords', JSON.stringify(allWords)); }
         function nextWord() { if(displayList.length > 0) { currentIndex = (currentIndex + 1) % displayList.length; render(); } }
         function prevWord() { if(displayList.length > 0) { currentIndex = (currentIndex - 1 + displayList.length) % displayList.length; render(); } }
-        
         function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
-        function importData() { 
-            const i = document.createElement("input"); i.type = "file"; 
-            i.onchange = e => { 
-                const r = new FileReader(); 
-                r.onload = ev => { 
-                    try {
-                        allWords = JSON.parse(ev.target.result); save(); location.reload(); 
-                    } catch(err) { alert("匯入格式有誤"); }
-                }; 
-                r.readAsText(e.target.files[0]); 
-            }; 
-            i.click(); 
-        }
+        function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
         
-        // 初始執行
         updateDisplayList();
     </script>
 </body>

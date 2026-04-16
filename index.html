@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>日文單字本</title>
+    <title>日文單字 App</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #f4f7f9; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         .app-container { width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
         .input-section { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { padding: 12px; border: none; border-radius: 8px; background: #007bff; color: white; font-weight: bold; font-size: 16px; }
-        .card { width: 100%; height: 220px; perspective: 1000px; margin-bottom: 20px; cursor: pointer; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; -webkit-appearance: none; }
+        button { padding: 12px; border: none; border-radius: 8px; background: #007bff; color: white; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .card { width: 100%; height: 220px; perspective: 1000px; margin-bottom: 20px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 20px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -19,35 +20,39 @@
         #word-display { font-size: 2.2rem; font-weight: bold; }
         .voice-btn { margin-top: 10px; background: #eee; color: #333; padding: 8px 20px; border-radius: 20px; border: none; }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .full-btn { grid-column: span 2; }
+        .del-btn { background: #dc3545 !important; grid-column: span 2; margin-top: 10px; font-size: 14px; opacity: 0.9; }
         .is-hard { background: #ffc107 !important; color: #333 !important; }
+        .full-btn { grid-column: span 2; }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <h2 style="text-align:center;">🇯🇵 日文單字手冊</h2>
+        <h2>🇯🇵 我的日文筆記簿</h2>
+        
         <div class="input-section">
-            <input type="text" id="jpInput" placeholder="日文/漢字">
-            <input type="text" id="readingInput" placeholder="讀音 (選填)">
-            <input type="text" id="cnInput" placeholder="中文意思">
-            <button onclick="addWord()">➕ 新增單字</button>
+            <input type="text" id="jpInput" placeholder="直接打日文 (例: 食べる)">
+            <input type="text" id="cnInput" placeholder="意思 (例: 吃)">
+            <button onclick="addWord()">➕ 新增並發音</button>
         </div>
+
         <div class="card" id="flashcard" onclick="flipCard()">
             <div class="card-inner">
                 <div class="card-front">
                     <div id="word-display">尚未新增</div>
-                    <small id="reading-display" style="color: #666;"></small>
                     <button class="voice-btn" onclick="speakWord(event)">🔊 發音</button>
                 </div>
                 <div class="card-back" id="meaning-display">意思</div>
             </div>
         </div>
+
         <div class="controls">
             <button onclick="prevWord(event)">⬅️ 上一個</button>
             <button onclick="nextWord(event)">➡️ 下一個</button>
             <button id="pinBtn" class="full-btn" onclick="togglePin(event)">⭐ 標記為不懂</button>
+            <button class="del-btn" onclick="deleteWord(event)">🗑️ 刪除目前單字</button>
         </div>
     </div>
+
     <script>
         let words = JSON.parse(localStorage.getItem('myWords')) || [];
         let currentIndex = 0;
@@ -56,15 +61,25 @@
 
         function addWord() {
             const jp = document.getElementById('jpInput').value;
-            const reading = document.getElementById('readingInput').value;
             const cn = document.getElementById('cnInput').value;
             if (jp && cn) {
-                words.push({ jp, reading, cn, isHard: false });
+                words.push({ jp, cn, isHard: false });
                 currentIndex = words.length - 1;
                 saveAndRender();
+                speakWord(); // 自動讀出剛打的日文
                 document.getElementById('jpInput').value = '';
-                document.getElementById('readingInput').value = '';
                 document.getElementById('cnInput').value = '';
+            }
+        }
+
+        function deleteWord(e) {
+            e.stopPropagation();
+            if (words.length === 0) return;
+            if (confirm("要刪除這個單字嗎？")) {
+                words.splice(currentIndex, 1);
+                currentIndex = Math.max(0, currentIndex - 1);
+                saveAndRender();
+                if (words.length === 0) location.reload();
             }
         }
 
@@ -72,7 +87,6 @@
             if (words.length === 0) return;
             const current = words[currentIndex];
             document.getElementById('word-display').innerText = current.jp;
-            document.getElementById('reading-display').innerText = current.reading ? `(${current.reading})` : '';
             document.getElementById('meaning-display').innerText = current.cn;
             const pinBtn = document.getElementById('pinBtn');
             pinBtn.innerText = current.isHard ? "🌟 已標記不懂" : "⭐ 標記為不懂";
@@ -86,10 +100,12 @@
         }
 
         function speakWord(e) {
-            e.stopPropagation();
+            if (e) e.stopPropagation();
             if (words.length > 0) {
+                window.speechSynthesis.cancel();
                 const utter = new SpeechSynthesisUtterance(words[currentIndex].jp);
                 utter.lang = 'ja-JP';
+                utter.rate = 0.85; // 慢速唸更清楚
                 window.speechSynthesis.speak(utter);
             }
         }

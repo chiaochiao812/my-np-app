@@ -4,53 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>日文單字 App - 舒適版</title>
+    <title>日文單字 App - 佈局優化版</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; }
         .app-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; flex-grow: 1; }
         
         /* 頂部切換 */
-        .mode-tabs { display: flex; width: 100%; gap: 8px; margin-bottom: 12px; }
+        .mode-tabs { display: flex; width: 100%; gap: 8px; margin-bottom: 10px; }
         .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 13px; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        .top-bar { width: 100%; margin-bottom: 8px; }
+        .top-bar { width: 100%; margin-bottom: 5px; }
         select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--primary); font-size: 15px; background: white; outline: none; }
         .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #a4b0be; padding: 4px; }
 
-        /* 卡片區域：縮減高度讓下方有空間 */
-        .card-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; margin: 10px 0; min-height: 220px; }
-        .card { width: 100%; height: 220px; perspective: 1000px; }
+        /* 卡片區域 */
+        .card-area { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px; }
+        .card { width: 100%; height: 210px; perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 20px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); }
         
-        #word-display { font-size: 2.4rem; font-weight: bold; color: #2f3542; text-align: center; }
+        #word-display { font-size: 2.3rem; font-weight: bold; color: #2f3542; text-align: center; }
         #meaning-display { font-size: 1.8rem; text-align: center; }
         .cat-tag { position: absolute; top: 12px; left: 15px; font-size: 10px; color: #bdc3c7; }
         .star-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 挑戰模式 */
-        #quiz-view { display: none; width: 100%; flex-direction: column; align-items: center; }
-        .quiz-box { background: white; width: 100%; padding: 25px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
+        /* 導覽按鈕：緊貼在卡片下方 */
+        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 15px; margin-bottom: 30px; } /* 下方留空 30px */
 
-        /* --- 底部按鈕佈局優化 --- */
-        .bottom-section { width: 100%; display: flex; flex-direction: column; margin-top: auto; padding-bottom: 30px; } /* 增加下方緩衝，不貼地 */
-        
-        /* 增加按鈕行之間的間距 */
-        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
-        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; } 
+        /* 挑戰模式盒子 */
+        .quiz-box { background: white; width: 100%; padding: 25px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; text-align: center; box-sizing: border-box;}
 
-        /* 控制按鈕的高度與字體 */
+        /* 操作與管理區域 */
+        .bottom-section { width: 100%; display: flex; flex-direction: column; margin-top: auto; padding-bottom: 25px; } 
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
+
         .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 12px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 10px; border: none; }
-        
-        /* 管理按鈕獨立出來，增加與上方的間隔 */
         .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
 
+        /* 管理面板 */
         .admin-panel { display: none; background: white; padding: 20px; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
         .admin-panel.active { display: flex; }
         input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
@@ -86,46 +83,45 @@
                         <span id="cat-display" class="cat-tag">未分類</span>
                         <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
                         <div id="word-display">尚未新增</div>
-                        <button style="margin-top:20px; border:none; background:#f1f2f6; padding:6px 15px; border-radius:15px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 發音</button>
+                        <button style="margin-top:20px; border:none; background:#f1f2f6; padding:6px 15px; border-radius:15px; font-size:11px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 發音</button>
                     </div>
                     <div class="card-back">
                         <div id="meaning-display">意思</div>
                     </div>
                 </div>
             </div>
+            
+            <div id="nav-arrows" class="nav-row">
+                <button class="nav-btn" onclick="prevWord()">⬅️</button>
+                <button class="nav-btn" onclick="nextWord()">➡️</button>
+            </div>
         </div>
 
-        <div id="quiz-view" class="card-area">
+        <div id="quiz-view" class="card-area" style="display:none;">
             <div class="quiz-box">
-                <div id="quiz-jp" style="font-size: 2.8rem; font-weight: bold;">?</div>
-                <div id="quiz-ans-area" style="font-size: 22px; color: var(--success); margin-top: 15px; min-height: 30px; font-weight: bold;"></div>
+                <div id="quiz-jp" style="font-size: 2.5rem; font-weight: bold;">?</div>
+                <div id="quiz-ans-area" style="font-size: 20px; color: var(--success); margin-top: 15px; min-height: 28px; font-weight: bold;"></div>
             </div>
-            <div style="width: 100%; display: flex; gap: 10px;">
+            <div style="width: 100%; display: flex; gap: 10px; margin-top: 5px;">
                 <button class="nav-btn" style="flex:1; background: #e2e8f0; font-size: 15px;" onclick="showQuizAnswer()">👁️ 看答案</button>
                 <button class="nav-btn" style="flex:1; background: var(--success); color: white; font-size: 15px;" onclick="nextQuiz()">下一個 ➡️</button>
             </div>
         </div>
 
         <div class="bottom-section">
-            <div id="nav-arrows" class="nav-row">
-                <button class="nav-btn" onclick="prevWord()">⬅️</button>
-                <button class="nav-btn" onclick="nextWord()">➡️</button>
-            </div>
-
             <div id="edit-actions" class="action-row">
                 <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正單字</button>
                 <button class="nav-btn btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除單字</button>
             </div>
-
             <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字 / 備份</button>
         </div>
     </div>
 
-    <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
+    <div class="overlay" id="overlay" onclick="closeAdmin()"></div>
     <div id="adminPanel" class="admin-panel">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
             <b id="panelTitle">新增單字</b>
-            <button onclick="toggleAdmin()" style="background:none; border:none; font-size:20px; color:#ccc;">✕</button>
+            <button onclick="closeAdmin()" style="background:none; border:none; font-size:20px; color:#ccc;">✕</button>
         </div>
         <input type="text" id="catInput" placeholder="分類 (例如: N5)" list="cat-history">
         <datalist id="cat-history"></datalist>
@@ -148,7 +144,6 @@
     </div>
 
     <script>
-        // 核心邏輯保持不變，確保穩定性
         let allWords = [];
         try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
@@ -159,10 +154,21 @@
             document.getElementById('study-view').style.display = (mode === 'study') ? 'flex' : 'none';
             document.getElementById('quiz-view').style.display = (mode === 'quiz') ? 'flex' : 'none';
             document.getElementById('edit-actions').style.display = (mode === 'study') ? 'grid' : 'none';
-            document.getElementById('nav-arrows').style.display = (mode === 'study') ? 'grid' : 'none';
             document.getElementById('tab-study').classList.toggle('active', mode === 'study');
             document.getElementById('tab-quiz').classList.toggle('active', mode === 'quiz');
             if (mode === 'quiz') nextQuiz(); else render();
+        }
+
+        // 修改：增加關閉面板時的重置邏輯
+        function toggleAdmin() {
+            document.getElementById('adminPanel').classList.add('active'); 
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function closeAdmin() {
+            document.getElementById('adminPanel').classList.remove('active'); 
+            document.getElementById('overlay').classList.remove('active');
+            cancelEdit(); // 確保每次關閉都重置成「新增」模式，解決卡住問題
         }
 
         function nextQuiz() {
@@ -188,11 +194,6 @@
             utter.lang = 'ja-JP'; utter.rate = 0.85; window.speechSynthesis.speak(utter);
         }
 
-        function toggleAdmin() { 
-            document.getElementById('adminPanel').classList.toggle('active'); 
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
         function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
 
         function updateDisplayList() {
@@ -209,8 +210,7 @@
             const cats = [...new Set(allWords.map(w => w.cat || "未分類"))];
             let html = '<option value="all">📁 全部單字</option><option value="favorites">⭐ 已收藏單字</option><option disabled>──────────</option>';
             cats.forEach(c => { html += `<option value="${c}">📁 ${c}</option>`; });
-            filter.innerHTML = html;
-            filter.value = selectedCategory;
+            filter.innerHTML = html; filter.value = selectedCategory;
             history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
         }
 
@@ -234,7 +234,7 @@
             if (jp && cn) {
                 allWords.push({ jp, cn, cat, isHard: false, id: Date.now() });
                 save(); updateDisplayList();
-                document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = ''; toggleAdmin();
+                document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = ''; closeAdmin();
             }
         }
 
@@ -243,10 +243,11 @@
         function prevWord() { if(displayList.length > 0) { currentIndex = (currentIndex - 1 + displayList.length) % displayList.length; render(); } }
         function togglePin(e) { e.stopPropagation(); displayList[currentIndex].isHard = !displayList[currentIndex].isHard; save(); render(); }
         function changeCategoryFilter() { selectedCategory = document.getElementById('catFilter').value; currentIndex = 0; updateDisplayList(); }
-        function shuffleWords() { allWords.sort(() => Math.random() - 0.5); save(); updateDisplayList(); toggleAdmin(); }
+        function shuffleWords() { allWords.sort(() => Math.random() - 0.5); save(); updateDisplayList(); closeAdmin(); }
         function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
         function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
         function deleteWord() { if (displayList.length > 0 && confirm("確定刪除此單字？")) { allWords = allWords.filter(w => w.id !== displayList[currentIndex].id); save(); updateDisplayList(); } }
+        
         function startEdit() {
             if (displayList.length === 0) return;
             const current = displayList[currentIndex];
@@ -254,6 +255,7 @@
             document.getElementById('catInput').value = current.cat || "未分類";
             document.getElementById('jpInput').value = current.jp;
             document.getElementById('cnInput').value = current.cn;
+            document.getElementById('panelTitle').innerText = "✏️ 修正內容";
             document.getElementById('addBtn').style.display = 'none';
             document.getElementById('editBtns').style.display = 'flex';
             toggleAdmin();
@@ -264,10 +266,12 @@
                 allWords[idx].cat = document.getElementById('catInput').value.trim() || "未分類";
                 allWords[idx].jp = document.getElementById('jpInput').value.trim();
                 allWords[idx].cn = document.getElementById('cnInput').value.trim();
-                save(); updateDisplayList(); cancelEdit(); toggleAdmin();
+                save(); updateDisplayList(); closeAdmin();
             }
         }
         function cancelEdit() {
+            editTargetId = null;
+            document.getElementById('panelTitle').innerText = "新增單字";
             document.getElementById('addBtn').style.display = 'block';
             document.getElementById('editBtns').style.display = 'none';
             document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';

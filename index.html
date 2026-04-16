@@ -4,30 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>日文單字 App - 置中優化版</title>
+    <title>日文單字 App - 完美版</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
         
-        /* 讓身體撐滿全螢幕，不產生滾動條 */
         body { 
             font-family: -apple-system, sans-serif; 
             background: var(--bg); 
-            margin: 0; 
-            padding: 0; 
-            height: 100vh; 
-            width: 100vw;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            overflow: hidden; 
+            margin: 0; padding: 0; 
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; 
+            align-items: center; overflow: hidden; 
             box-sizing: border-box;
         }
 
         .app-container { 
-            width: 92%; 
-            max-width: 400px; 
-            height: 100%;
-            display: flex; 
+            width: 92%; max-width: 400px; 
+            height: 100%; display: flex; 
             flex-direction: column; 
         }
         
@@ -40,13 +33,11 @@
         select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); font-size: 15px; background: white; outline: none; }
         .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #a4b0be; padding: 4px; }
 
-        /* --- 單字卡區域：利用 flex-grow 實現垂直置中 --- */
+        /* --- 單字卡區域：垂直置中 --- */
         .card-area { 
             flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; /* 讓內容在正中央 */
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; 
             width: 100%;
         }
 
@@ -62,26 +53,23 @@
         .star-btn { position: absolute; top: 12px; right: 15px; font-size: 28px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 導覽按鈕緊跟在單字下方 */
+        /* 導覽按鈕 */
         .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 15px; }
         .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.03); }
 
-        /* --- 底部控制區：往上抬升 --- */
+        /* --- 底部控制區：明顯往上抬升 --- */
         .bottom-section { 
-            width: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            padding-bottom: 110px; /* 大幅增加底部墊高，讓按鈕浮上來 */
+            width: 100%; display: flex; flex-direction: column; 
+            padding-bottom: 120px; /* 這裡控制整塊按鈕往上浮的高度 */
         } 
         
         .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
         .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 12px; border: none; border-radius: 12px; cursor: pointer; }
         .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 15px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-        /* 挑戰模式 */
         .quiz-box { background: white; width: 100%; padding: 30px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box;}
 
-        /* 管理面板 */
+        /* 面板 */
         .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 4px solid var(--primary); }
         .admin-panel.active { display: flex; }
         .admin-panel input { margin-bottom: 10px; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
@@ -104,7 +92,7 @@
             <div class="top-bar">
                 <select id="catFilter" onchange="changeCategoryFilter()">
                     <option value="all">📁 全部單字</option>
-                    <option value="favorites">⭐ 已收藏單字</option>
+                    <option value="favorites">⭐ 已收藏</option>
                 </select>
                 <div class="stats-row">
                     <span id="counter">0 / 0</span>
@@ -120,14 +108,13 @@
                         <span id="cat-display" class="cat-tag">未分類</span>
                         <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
                         <div id="word-display">尚未新增</div>
-                        <button style="margin-top:25px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 語音</button>
+                        <button style="margin-top:25px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
                     </div>
                     <div class="card-back">
                         <div id="meaning-display">意思</div>
                     </div>
                 </div>
             </div>
-            
             <div id="nav-arrows" class="nav-row">
                 <button class="nav-btn" onclick="prevWord()">⬅️</button>
                 <button class="nav-btn" onclick="nextWord()">➡️</button>
@@ -179,11 +166,31 @@
     </div>
 
     <script>
-        // 核心邏輯 (不變)
         let allWords = [];
         try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
         let currentMode = 'study';
+
+        // --- 發音核心修正 ---
+        let jpVoice = null;
+        function findJpVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            // 優先找日文老師的聲音
+            jpVoice = voices.find(v => v.lang.toLowerCase().includes('ja')) || voices.find(v => v.lang === 'ja-JP');
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = findJpVoice;
+        findJpVoice();
+
+        function speakWord(e) {
+            if (e) e.stopPropagation();
+            if (displayList.length === 0) return;
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
+            if (jpVoice) utter.voice = jpVoice;
+            utter.lang = 'ja-JP'; 
+            utter.rate = 0.85; 
+            window.speechSynthesis.speak(utter);
+        }
 
         function switchMode(mode) {
             currentMode = mode;
@@ -211,14 +218,6 @@
                 document.getElementById('quiz-ans-area').innerText = displayList[currentIndex].cn;
                 speakWord();
             }
-        }
-
-        function speakWord(e) {
-            if (e) e.stopPropagation();
-            if (displayList.length === 0) return;
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
-            utter.lang = 'ja-JP'; utter.rate = 0.85; window.speechSynthesis.speak(utter);
         }
 
         function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
@@ -274,6 +273,7 @@
         function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
         function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
         function deleteWord() { if (displayList.length > 0 && confirm("確定刪除此單字？")) { allWords = allWords.filter(w => w.id !== displayList[currentIndex].id); save(); updateDisplayList(); } }
+        
         function startEdit() {
             if (displayList.length === 0) return;
             const current = displayList[currentIndex];

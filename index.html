@@ -18,7 +18,7 @@
         .card-front { border: 2px solid #007bff; }
         .card-back { background: #e7f3ff; transform: rotateY(180deg); color: #0056b3; font-size: 1.8rem; text-align: center; padding: 10px; }
         #word-display { font-size: 2.2rem; font-weight: bold; }
-        .voice-btn { margin-top: 10px; background: #eee; color: #333; padding: 8px 20px; border-radius: 20px; border: none; }
+        .voice-btn { margin-top: 10px; background: #eee; color: #333; padding: 8px 20px; border-radius: 20px; border: none; font-size: 14px; }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .del-btn { background: #dc3545 !important; grid-column: span 2; margin-top: 10px; font-size: 14px; opacity: 0.9; }
         .is-hard { background: #ffc107 !important; color: #333 !important; }
@@ -27,35 +27,42 @@
 </head>
 <body>
     <div class="app-container">
-        <h2>🇯🇵 我的日文筆記簿</h2>
-        
+        <h2>🇯🇵 日文單字手冊</h2>
         <div class="input-section">
-            <input type="text" id="jpInput" placeholder="直接打日文 (例: 食べる)">
-            <input type="text" id="cnInput" placeholder="意思 (例: 吃)">
+            <input type="text" id="jpInput" placeholder="輸入日文 (如: 食べる)">
+            <input type="text" id="cnInput" placeholder="輸入中文 (如: 吃)">
             <button onclick="addWord()">➕ 新增並發音</button>
         </div>
-
         <div class="card" id="flashcard" onclick="flipCard()">
             <div class="card-inner">
                 <div class="card-front">
                     <div id="word-display">尚未新增</div>
-                    <button class="voice-btn" onclick="speakWord(event)">🔊 發音</button>
+                    <button class="voice-btn" onclick="speakWord(event)">🔊 聽發音</button>
                 </div>
                 <div class="card-back" id="meaning-display">意思</div>
             </div>
         </div>
-
         <div class="controls">
             <button onclick="prevWord(event)">⬅️ 上一個</button>
             <button onclick="nextWord(event)">➡️ 下一個</button>
-            <button id="pinBtn" class="full-btn" onclick="togglePin(event)">⭐ 標記為不懂</button>
-            <button class="del-btn" onclick="deleteWord(event)">🗑️ 刪除目前單字</button>
+            <button id="pinBtn" class="full-btn" onclick="togglePin(event)">⭐ 標記不懂</button>
+            <button class="del-btn" onclick="deleteWord(event)">🗑️ 刪除單字</button>
         </div>
     </div>
 
     <script>
         let words = JSON.parse(localStorage.getItem('myWords')) || [];
         let currentIndex = 0;
+        let jpVoice = null;
+
+        // 【核心修正：強制尋找日文語音包】
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            // 優先找日文語音
+            jpVoice = voices.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
 
         function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
 
@@ -66,16 +73,34 @@
                 words.push({ jp, cn, isHard: false });
                 currentIndex = words.length - 1;
                 saveAndRender();
-                speakWord(); // 自動讀出剛打的日文
+                setTimeout(() => speakWord(), 100); // 稍微延遲確保渲染完成
                 document.getElementById('jpInput').value = '';
                 document.getElementById('cnInput').value = '';
+            }
+        }
+
+        function speakWord(e) {
+            if (e) e.stopPropagation();
+            if (words.length > 0) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(words[currentIndex].jp);
+                
+                // 強制指定日文語音
+                if (jpVoice) {
+                    utter.voice = jpVoice;
+                }
+                utter.lang = 'ja-JP';
+                utter.rate = 0.85; // 語速稍微放慢
+                utter.pitch = 1;
+                
+                window.speechSynthesis.speak(utter);
             }
         }
 
         function deleteWord(e) {
             e.stopPropagation();
             if (words.length === 0) return;
-            if (confirm("要刪除這個單字嗎？")) {
+            if (confirm("要刪除嗎？")) {
                 words.splice(currentIndex, 1);
                 currentIndex = Math.max(0, currentIndex - 1);
                 saveAndRender();
@@ -97,17 +122,6 @@
         function togglePin(e) {
             e.stopPropagation();
             if (words.length > 0) { words[currentIndex].isHard = !words[currentIndex].isHard; saveAndRender(); }
-        }
-
-        function speakWord(e) {
-            if (e) e.stopPropagation();
-            if (words.length > 0) {
-                window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(words[currentIndex].jp);
-                utter.lang = 'ja-JP';
-                utter.rate = 0.85; // 慢速唸更清楚
-                window.speechSynthesis.speak(utter);
-            }
         }
 
         function saveAndRender() { localStorage.setItem('myWords', JSON.stringify(words)); render(); }

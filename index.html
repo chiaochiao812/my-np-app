@@ -2,9 +2,9 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>日文單字 App - 完美版</title>
+    <title>日文單字 App - V1.6</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
         
@@ -12,71 +12,77 @@
             font-family: -apple-system, sans-serif; 
             background: var(--bg); 
             margin: 0; padding: 0; 
-            height: 100vh; width: 100vw;
+            min-height: 100vh; width: 100vw;
             display: flex; flex-direction: column; 
-            align-items: center; overflow: hidden; 
+            align-items: center; 
+            overflow-x: hidden;
+            overflow-y: auto; /* 允許垂直滾動防止遮擋 */
             box-sizing: border-box;
         }
 
         .app-container { 
             width: 92%; max-width: 400px; 
-            height: 100%; display: flex; 
+            display: flex; 
             flex-direction: column; 
+            min-height: 100vh;
         }
         
-        /* 頂部區域 */
-        .header-section { padding-top: 15px; width: 100%; }
-        .mode-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+        /* --- 修正：增加頂部內邊距避開遮擋 --- */
+        .header-section { 
+            padding-top: 40px; /* 這裡加大，避開網址列與瀏海 */
+            width: 100%; 
+        }
+        
+        .version-tag { font-size: 10px; color: #ddd; text-align: center; margin-bottom: 5px; }
+        
+        .mode-tabs { display: flex; gap: 8px; margin-bottom: 8px; }
         .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 13px; }
         .tab-btn.active { background: var(--primary); color: white; }
-        .top-bar { width: 100%; margin-bottom: 5px; }
-        select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); font-size: 15px; background: white; outline: none; }
+        
+        select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--primary); font-size: 15px; background: white; outline: none; }
         .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #a4b0be; padding: 4px; }
 
-        /* --- 單字卡區域：垂直置中 --- */
+        /* 置中區域 */
         .card-area { 
             flex-grow: 1; 
             display: flex; flex-direction: column; 
             align-items: center; justify-content: center; 
             width: 100%;
+            padding: 20px 0; /* 增加上下緩衝 */
         }
 
-        .card { width: 100%; height: 230px; perspective: 1000px; }
+        .card { width: 100%; height: 210px; perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 25px; background: white; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eee; }
         .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); }
         
-        #word-display { font-size: 2.6rem; font-weight: bold; color: #2f3542; text-align: center; }
-        #meaning-display { font-size: 2.2rem; text-align: center; }
+        #word-display { font-size: 2.4rem; font-weight: bold; color: #2f3542; text-align: center; }
+        #meaning-display { font-size: 2rem; text-align: center; }
         .cat-tag { position: absolute; top: 15px; left: 20px; font-size: 11px; color: #bdc3c7; }
-        .star-btn { position: absolute; top: 12px; right: 15px; font-size: 28px; color: #eee; background: none; border: none; cursor: pointer; }
+        .star-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 導覽按鈕 */
         .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 15px; }
         .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.03); }
 
-        /* --- 底部控制區：明顯往上抬升 --- */
+        /* 底部控制區抬升 */
         .bottom-section { 
             width: 100%; display: flex; flex-direction: column; 
-            padding-bottom: 120px; /* 這裡控制整塊按鈕往上浮的高度 */
+            padding-bottom: 140px; /* 保持抬升高度 */
         } 
         
         .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
         .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 12px; border: none; border-radius: 12px; cursor: pointer; }
         .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 15px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-        .quiz-box { background: white; width: 100%; padding: 30px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box;}
-
-        /* 面板 */
+        /* 面板與其它 */
         .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 4px solid var(--primary); }
         .admin-panel.active { display: flex; }
         .admin-panel input { margin-bottom: 10px; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
         .util-row { display: flex; gap: 8px; margin: 15px 0; } 
         .btn-util { background: #7f8c8d; font-size: 12px; flex: 1; border: none; border-radius: 10px; padding: 12px; color: white; font-weight: bold; cursor: pointer; }
         .btn-main { width: 100%; border: none; border-radius: 12px; padding: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 16px; background: var(--primary); }
-        
         .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 90; }
         .overlay.active { display: block; }
     </style>
@@ -85,6 +91,7 @@
 
     <div class="app-container">
         <div class="header-section">
+            <div class="version-tag">V1.6-防遮擋修正版</div>
             <div class="mode-tabs">
                 <button id="tab-study" class="tab-btn active" onclick="switchMode('study')">📖 學習模式</button>
                 <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">🎯 挑戰模式</button>
@@ -108,7 +115,7 @@
                         <span id="cat-display" class="cat-tag">未分類</span>
                         <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
                         <div id="word-display">尚未新增</div>
-                        <button style="margin-top:25px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
+                        <button style="margin-top:20px; border:none; background:#f1f2f6; padding:8px 20px; border-radius:20px; font-size:12px; font-weight:bold; color:#57606f;" onclick="speakWord(event)">🔊 聽發音</button>
                     </div>
                     <div class="card-back">
                         <div id="meaning-display">意思</div>
@@ -122,7 +129,7 @@
         </div>
 
         <div id="quiz-view" class="card-area" style="display:none;">
-            <div class="quiz-box">
+            <div style="background: white; width: 100%; padding: 40px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
                 <div id="quiz-jp" style="font-size: 2.8rem; font-weight: bold;">?</div>
                 <div id="quiz-ans-area" style="font-size: 22px; color: var(--success); margin-top: 15px; min-height: 30px; font-weight: bold;"></div>
             </div>
@@ -171,14 +178,12 @@
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
         let currentMode = 'study';
 
-        // --- 發音核心修正 ---
         let jpVoice = null;
         function findJpVoice() {
             const voices = window.speechSynthesis.getVoices();
-            // 優先找日文老師的聲音
             jpVoice = voices.find(v => v.lang.toLowerCase().includes('ja')) || voices.find(v => v.lang === 'ja-JP');
         }
-        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = findJpVoice;
+        window.speechSynthesis.onvoiceschanged = findJpVoice;
         findJpVoice();
 
         function speakWord(e) {
@@ -187,9 +192,7 @@
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
             if (jpVoice) utter.voice = jpVoice;
-            utter.lang = 'ja-JP'; 
-            utter.rate = 0.85; 
-            window.speechSynthesis.speak(utter);
+            utter.lang = 'ja-JP'; utter.rate = 0.8; window.speechSynthesis.speak(utter);
         }
 
         function switchMode(mode) {
@@ -206,7 +209,7 @@
         function closeAdmin() { document.getElementById('adminPanel').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); cancelEdit(); }
 
         function nextQuiz() {
-            if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請先新增"; return; }
+            if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請新增"; return; }
             currentIndex = Math.floor(Math.random() * displayList.length);
             document.getElementById('quiz-jp').innerText = displayList[currentIndex].jp;
             document.getElementById('quiz-ans-area').innerText = "";
@@ -254,9 +257,7 @@
         }
 
         function addWord() {
-            const jp = document.getElementById('jpInput').value.trim();
-            const cn = document.getElementById('cnInput').value.trim();
-            const cat = document.getElementById('catInput').value.trim() || "未分類";
+            const jp = document.getElementById('jpInput').value.trim(), cn = document.getElementById('cnInput').value.trim(), cat = document.getElementById('catInput').value.trim() || "未分類";
             if (jp && cn) {
                 allWords.push({ jp, cn, cat, isHard: false, id: Date.now() });
                 save(); updateDisplayList();
@@ -273,7 +274,6 @@
         function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_backup.txt"; a.click(); }
         function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { try { allWords = JSON.parse(ev.target.result); save(); location.reload(); } catch(err) { alert("格式錯誤"); } }; r.readAsText(e.target.files[0]); }; i.click(); }
         function deleteWord() { if (displayList.length > 0 && confirm("確定刪除此單字？")) { allWords = allWords.filter(w => w.id !== displayList[currentIndex].id); save(); updateDisplayList(); } }
-        
         function startEdit() {
             if (displayList.length === 0) return;
             const current = displayList[currentIndex];

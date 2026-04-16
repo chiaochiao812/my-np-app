@@ -279,33 +279,3 @@
     </script>
 </body>
 </html>
-
-                saveAndRender();
-                if (words.length === 0) location.reload();
-            }
-        }
-
-        function render() {
-            if (words.length === 0) return;
-            const current = words[currentIndex];
-            document.getElementById('word-display').innerText = current.jp;
-            document.getElementById('meaning-display').innerText = current.cn;
-            const pinBtn = document.getElementById('pinBtn');
-            pinBtn.innerText = current.isHard ? "🌟 已標記不懂" : "⭐ 標記為不懂";
-            pinBtn.className = current.isHard ? "full-btn is-hard" : "full-btn";
-            document.getElementById('flashcard').classList.remove('flipped');
-        }
-
-        function togglePin(e) {
-            e.stopPropagation();
-            if (words.length > 0) { words[currentIndex].isHard = !words[currentIndex].isHard; saveAndRender(); }
-        }
-
-        function saveAndRender() { localStorage.setItem('myWords', JSON.stringify(words)); render(); }
-        function nextWord(e) { e.stopPropagation(); if(words.length > 0) { currentIndex = (currentIndex + 1) % words.length; render(); } }
-        function prevWord(e) { e.stopPropagation(); if(words.length > 0) { currentIndex = (currentIndex - 1 + words.length) % words.length; render(); } }
-        
-        render();
-    </script>
-</body>
-</html>

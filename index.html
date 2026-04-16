@@ -10,7 +10,7 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; }
         .app-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; flex-grow: 1; }
         
-        /* 頂部切換 */
+        /* 頂部模式切換 */
         .mode-tabs { display: flex; width: 100%; gap: 8px; margin-bottom: 10px; }
         .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 13px; }
         .tab-btn.active { background: var(--primary); color: white; }
@@ -33,13 +33,13 @@
         .star-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 導覽按鈕：緊貼在卡片下方，間距縮短 */
+        /* 導覽按鈕 */
         .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 8px; margin-bottom: 20px; }
 
         /* 挑戰模式盒子 */
         .quiz-box { background: white; width: 100%; padding: 25px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; text-align: center; box-sizing: border-box;}
 
-        /* 操作與管理區域 */
+        /* 主畫面操作區 */
         .bottom-section { width: 100%; display: flex; flex-direction: column; margin-top: auto; padding-bottom: 20px; } 
         .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; } 
 
@@ -47,12 +47,22 @@
         .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 10px; border: none; }
         .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-        /* 管理面板 */
-        .admin-panel { display: none; background: white; padding: 20px; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
+        /* --- 管理面板佈局修正 --- */
+        .admin-panel { display: none; background: white; padding: 20px; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
         .admin-panel.active { display: flex; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        .btn { border: none; border-radius: 10px; padding: 12px; font-weight: bold; color: white; cursor: pointer; }
+        
+        /* 面板內的元件間距 */
+        .admin-panel input { margin-bottom: 10px; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        
+        /* 中間工具列 (亂序、備份、匯入) */
+        .util-row { display: flex; gap: 8px; margin: 15px 0; } /* 這裡設定 margin 產生上下空白 */
+        .btn-util { background: #7f8c8d; font-size: 11px; flex: 1; border: none; border-radius: 10px; padding: 10px; color: white; font-weight: bold; cursor: pointer; }
+
+        /* 面板底部的主按鈕 */
+        #buttonArea { margin-top: 5px; margin-bottom: 10px; }
+        .btn-main { width: 100%; border: none; border-radius: 10px; padding: 14px; font-weight: bold; color: white; cursor: pointer; font-size: 16px; }
         .btn-add { background: var(--primary); }
+        
         .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 90; }
         .overlay.active { display: block; }
     </style>
@@ -119,27 +129,28 @@
 
     <div class="overlay" id="overlay" onclick="closeAdmin()"></div>
     <div id="adminPanel" class="admin-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <b id="panelTitle">新增單字</b>
-            <button onclick="closeAdmin()" style="background:none; border:none; font-size:20px; color:#ccc;">✕</button>
+            <button onclick="closeAdmin()" style="background:none; border:none; font-size:24px; color:#ccc; padding:5px;">✕</button>
         </div>
+        
         <input type="text" id="catInput" placeholder="分類 (例如: N5)" list="cat-history">
         <datalist id="cat-history"></datalist>
         <input type="text" id="jpInput" placeholder="日文單字">
         <input type="text" id="cnInput" placeholder="中文意思">
         
-        <div id="buttonArea">
-            <button id="addBtn" class="btn btn-add" style="width:100%" onclick="addWord()">➕ 加入單字本</button>
-            <div id="editBtns" style="display:none; gap:10px;">
-                <button class="btn" style="background:var(--success); flex:2" onclick="saveEdit()">💾 儲存</button>
-                <button class="btn" style="background:#95a5a6; flex:1" onclick="cancelEdit()">取消</button>
-            </div>
+        <div class="util-row">
+            <button class="btn-util" onclick="shuffleWords()">🔀 亂序</button>
+            <button class="btn-util" onclick="exportData()">💾 備份</button>
+            <button class="btn-util" onclick="importData()">📂 匯入</button>
         </div>
         
-        <div style="display:flex; gap:5px; margin-top:5px;">
-            <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1; border:none;" onclick="shuffleWords()">🔀 亂序</button>
-            <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1; border:none;" onclick="exportData()">💾 備份</button>
-            <button class="btn" style="background:#7f8c8d; font-size:11px; flex:1; border:none;" onclick="importData()">📂 匯入</button>
+        <div id="buttonArea">
+            <button id="addBtn" class="btn-main btn-add" onclick="addWord()">➕ 加入單字本</button>
+            <div id="editBtns" style="display:none; gap:10px;">
+                <button class="btn-main" style="background:var(--success); flex:2" onclick="saveEdit()">💾 儲存修改</button>
+                <button class="btn-main" style="background:#95a5a6; flex:1" onclick="cancelEdit()">取消</button>
+            </div>
         </div>
     </div>
 

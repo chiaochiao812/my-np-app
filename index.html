@@ -33,15 +33,15 @@
         .star-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 導覽按鈕：緊貼在卡片下方 */
-        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 15px; margin-bottom: 30px; } /* 下方留空 30px */
+        /* 導覽按鈕：緊貼在卡片下方，間距縮短 */
+        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 8px; margin-bottom: 20px; }
 
         /* 挑戰模式盒子 */
-        .quiz-box { background: white; width: 100%; padding: 25px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; text-align: center; box-sizing: border-box;}
+        .quiz-box { background: white; width: 100%; padding: 25px 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; text-align: center; box-sizing: border-box;}
 
         /* 操作與管理區域 */
-        .bottom-section { width: 100%; display: flex; flex-direction: column; margin-top: auto; padding-bottom: 25px; } 
-        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; } 
+        .bottom-section { width: 100%; display: flex; flex-direction: column; margin-top: auto; padding-bottom: 20px; } 
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; } 
 
         .nav-btn { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 12px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: 600; padding: 10px; border: none; }
@@ -102,7 +102,7 @@
                 <div id="quiz-jp" style="font-size: 2.5rem; font-weight: bold;">?</div>
                 <div id="quiz-ans-area" style="font-size: 20px; color: var(--success); margin-top: 15px; min-height: 28px; font-weight: bold;"></div>
             </div>
-            <div style="width: 100%; display: flex; gap: 10px; margin-top: 5px;">
+            <div style="width: 100%; display: flex; gap: 10px;">
                 <button class="nav-btn" style="flex:1; background: #e2e8f0; font-size: 15px;" onclick="showQuizAnswer()">👁️ 看答案</button>
                 <button class="nav-btn" style="flex:1; background: var(--success); color: white; font-size: 15px;" onclick="nextQuiz()">下一個 ➡️</button>
             </div>
@@ -159,17 +159,8 @@
             if (mode === 'quiz') nextQuiz(); else render();
         }
 
-        // 修改：增加關閉面板時的重置邏輯
-        function toggleAdmin() {
-            document.getElementById('adminPanel').classList.add('active'); 
-            document.getElementById('overlay').classList.add('active');
-        }
-
-        function closeAdmin() {
-            document.getElementById('adminPanel').classList.remove('active'); 
-            document.getElementById('overlay').classList.remove('active');
-            cancelEdit(); // 確保每次關閉都重置成「新增」模式，解決卡住問題
-        }
+        function toggleAdmin() { document.getElementById('adminPanel').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+        function closeAdmin() { document.getElementById('adminPanel').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); cancelEdit(); }
 
         function nextQuiz() {
             if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請先增加單字"; return; }

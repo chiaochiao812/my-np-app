@@ -4,6 +4,243 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>日文單字</title>
+    <style>
+        :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --bg: #ffffff; --card-bg: #f8f9fa; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); margin: 0; overflow: hidden; height: 100vh; color: #2f3542; }
+        
+        /* 頂部導覽 */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; }
+        select { border: none; font-size: 16px; font-weight: bold; outline: none; background: transparent; color: var(--primary); }
+
+        /* 閃卡主區域 */
+        .main-content { height: calc(100vh - 150px); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 30px; }
+        .card { width: 100%; max-width: 320px; height: 380px; perspective: 1000px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; background: var(--card-bg); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .card-back { transform: rotateY(180deg); background: #eef5ff; color: var(--primary); }
+        #word-display { font-size: 2.5rem; font-weight: 800; text-align: center; padding: 0 20px; }
+        #meaning-display { font-size: 1.8rem; font-weight: 500; }
+        
+        /* 控制按鈕 */
+        .nav-controls { position: fixed; bottom: 40px; display: flex; gap: 40px; align-items: center; }
+        .nav-btn { background: #f1f2f6; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 20px; cursor: pointer; color: #57606f; transition: 0.2s; }
+        .nav-btn:active { transform: scale(0.9); background: #dfe4ea; }
+
+        /* 側邊欄 */
+        .sidebar { position: fixed; top: 0; right: -100%; width: 85%; height: 100%; background: white; z-index: 1000; transition: 0.3s; box-shadow: -5px 0 15px rgba(0,0,0,0.1); padding: 20px; box-sizing: border-box; }
+        .sidebar.active { right: 0; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; display: none; }
+        .overlay.active { display: block; }
+
+        /* 管理表單 */
+        .admin-section { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; }
+        .primary-btn { padding: 15px; border: none; border-radius: 10px; background: var(--primary); color: white; font-weight: bold; }
+        .secondary-btn { padding: 10px; border: 1px solid #ddd; border-radius: 10px; background: none; color: #666; font-size: 14px; }
+
+        /* 功能小標記 */
+        .badge { position: absolute; top: 25px; left: 30px; font-size: 12px; color: #a1a1a1; font-weight: bold; letter-spacing: 1px; }
+        .star-btn { position: absolute; top: 20px; right: 25px; font-size: 24px; color: #ddd; background: none; border: none; padding: 10px; }
+        .star-btn.active { color: var(--warning); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <select id="catFilter" onchange="changeCategoryFilter()">
+            <option value="all">所有單字</option>
+        </select>
+        <button onclick="toggleSidebar()" style="background:none; border:none; font-size:24px;">≡</button>
+    </div>
+
+    <div class="main-content">
+        <div class="card" id="flashcard" onclick="flipCard()">
+            <div class="card-inner">
+                <div class="card-front">
+                    <span id="cat-display" class="badge">分類</span>
+                    <button id="pinBtn" class="star-btn" onclick="togglePin(event)">★</button>
+                    <div id="word-display">開始背誦吧</div>
+                    <button style="margin-top:20px; border:none; background:#eee; padding:8px 15px; border-radius:20px; font-size:12px;" onclick="speakWord(event)">🔊 發音</button>
+                </div>
+                <div class="card-back">
+                    <div id="meaning-display">意思</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="prevWord()">←</button>
+            <div id="counter" style="color:#a4b0be; font-size:14px;">0 / 0</div>
+            <button class="nav-btn" onclick="nextWord()">→</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>管理單字本</h3>
+            <button onclick="toggleSidebar()" style="background:none; border:none; font-size:20px;">✕</button>
+        </div>
+        
+        <div class="admin-section">
+            <div id="editTitle" style="font-size:14px; color:var(--warning); display:none;">💡 正在編輯模式</div>
+            <input type="text" id="catInput" placeholder="輸入分類 (例: 第一課)" list="cat-history">
+            <datalist id="cat-history"></datalist>
+            <input type="text" id="jpInput" placeholder="日文">
+            <input type="text" id="cnInput" placeholder="中文意思">
+            <button id="addBtn" class="primary-btn" onclick="addWord()">新增單字</button>
+            <div id="editBtns" style="display:none; gap:10px;">
+                <button class="primary-btn" style="flex:2; background:var(--warning)" onclick="saveEdit()">儲存修改</button>
+                <button class="primary-btn" style="flex:1; background:#ccc" onclick="cancelEdit()">取消</button>
+            </div>
+            <hr style="width:100%; border:0.5px solid #eee; margin:10px 0;">
+            <button class="secondary-btn" onclick="shuffleWords()">🔀 亂序排列</button>
+            <button id="filterBtn" class="secondary-btn" onclick="toggleFilter()">🎯 只看不懂的</button>
+            <button class="secondary-btn" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除此單字</button>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button class="secondary-btn" style="flex:1" onclick="exportData()">💾 備份</button>
+                <button class="secondary-btn" style="flex:1" onclick="importData()">📂 匯入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allWords = JSON.parse(localStorage.getItem('myWords')) || [];
+        let isFilterMode = false, selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
+
+        // 語音
+        let jpVoice = null;
+        function loadVoices() { jpVoice = window.speechSynthesis.getVoices().find(v => v.lang.includes('ja')); }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+
+        function updateDisplayList() {
+            let filtered = selectedCategory === "all" ? allWords : allWords.filter(w => (w.cat || "未分類") === selectedCategory);
+            if (isFilterMode) filtered = filtered.filter(w => w.isHard);
+            displayList = filtered;
+            if (currentIndex >= displayList.length) currentIndex = 0;
+            updateCategoryUI();
+            render();
+        }
+
+        function updateCategoryUI() {
+            const filter = document.getElementById('catFilter');
+            const history = document.getElementById('cat-history');
+            const cats = [...new Set(allWords.map(w => w.cat || "未分類"))];
+            filter.innerHTML = '<option value="all">所有分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            filter.value = selectedCategory;
+            history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+        }
+
+        function addWord() {
+            const cat = document.getElementById('catInput').value.trim() || "未分類";
+            const jp = document.getElementById('jpInput').value.trim();
+            const cn = document.getElementById('cnInput').value.trim();
+            if (jp && cn) {
+                allWords.push({ jp, cn, cat, isHard: false, id: Date.now() });
+                save();
+                selectedCategory = cat;
+                updateDisplayList();
+                currentIndex = displayList.length - 1;
+                render();
+                speakWord();
+                document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
+                toggleSidebar();
+            }
+        }
+
+        function startEdit() {
+            const current = displayList[currentIndex];
+            editTargetId = current.id;
+            document.getElementById('catInput').value = current.cat;
+            document.getElementById('jpInput').value = current.jp;
+            document.getElementById('cnInput').value = current.cn;
+            document.getElementById('editTitle').style.display = 'block';
+            document.getElementById('addBtn').style.display = 'none';
+            document.getElementById('editBtns').style.display = 'flex';
+            toggleSidebar();
+        }
+
+        function saveEdit() {
+            const idx = allWords.findIndex(w => w.id === editTargetId);
+            allWords[idx] = {...allWords[idx], cat: document.getElementById('catInput').value, jp: document.getElementById('jpInput').value, cn: document.getElementById('cnInput').value};
+            save(); cancelEdit(); updateDisplayList(); toggleSidebar();
+        }
+
+        function cancelEdit() {
+            editTargetId = null;
+            document.getElementById('editTitle').style.display = 'none';
+            document.getElementById('addBtn').style.display = 'block';
+            document.getElementById('editBtns').style.display = 'none';
+            document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
+        }
+
+        function render() {
+            const wordDisp = document.getElementById('word-display'), meanDisp = document.getElementById('meaning-display'), 
+                  catDisp = document.getElementById('cat-display'), counter = document.getElementById('counter'), pinBtn = document.getElementById('pinBtn');
+            counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
+            if (displayList.length === 0) {
+                wordDisp.innerText = "空空如也"; meanDisp.innerText = "點擊選單新增"; catDisp.innerText = "-"; pinBtn.classList.remove('active');
+                return;
+            }
+            const current = displayList[currentIndex];
+            wordDisp.innerText = current.jp; meanDisp.innerText = current.cn; catDisp.innerText = current.cat;
+            current.isHard ? pinBtn.classList.add('active') : pinBtn.classList.remove('active');
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        function speakWord(e) {
+            if (e) e.stopPropagation();
+            if (displayList.length > 0) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
+                if (jpVoice) utter.voice = jpVoice;
+                utter.lang = 'ja-JP'; utter.rate = 0.85; window.speechSynthesis.speak(utter);
+            }
+        }
+
+        function deleteWord() {
+            if (displayList.length > 0 && confirm("刪除此單字？")) {
+                allWords = allWords.filter(w => w.id !== displayList[currentIndex].id);
+                save(); updateDisplayList(); toggleSidebar();
+            }
+        }
+
+        function togglePin(e) {
+            e.stopPropagation();
+            displayList[currentIndex].isHard = !displayList[currentIndex].isHard;
+            save(); render();
+        }
+
+        function toggleFilter() { isFilterMode = !isFilterMode; document.getElementById('filterBtn').style.color = isFilterMode ? "var(--warning)" : "#666"; currentIndex = 0; updateDisplayList(); toggleSidebar(); }
+        function shuffleWords() { displayList.sort(() => Math.random() - 0.5); currentIndex = 0; render(); toggleSidebar(); }
+        function changeCategoryFilter() { selectedCategory = document.getElementById('catFilter').value; currentIndex = 0; updateDisplayList(); }
+        function nextWord() { if(displayList.length > 0) { currentIndex = (currentIndex + 1) % displayList.length; render(); } }
+        function prevWord() { if(displayList.length > 0) { currentIndex = (currentIndex - 1 + displayList.length) % displayList.length; render(); } }
+        function save() { localStorage.setItem('myWords', JSON.stringify(allWords)); }
+        function exportData() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(allWords)], {type: "text/plain"})); a.download = "jp_words.txt"; a.click(); }
+        function importData() { const i = document.createElement("input"); i.type = "file"; i.onchange = e => { const r = new FileReader(); r.onload = ev => { allWords = JSON.parse(ev.target.result); save(); location.reload(); }; r.readAsText(e.target.files[0]); }; i.click(); }
+        
+        updateDisplayList();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="日文單字">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/197/197604.png">

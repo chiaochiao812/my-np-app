@@ -1,2 +1,2 @@
-# my-np-app
+# my-jp-app
 Japan 

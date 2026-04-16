@@ -6,88 +6,91 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>日文單字 App</title>
     <style>
-        :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f1f2f6; }
+        :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f5f6fa; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .app-container { width: 100%; max-width: 400px; }
         
-        /* 標題與分類選擇 */
-        .top-bar { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        h2 { margin: 0; text-align: center; color: #2f3542; font-size: 1.2rem; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; outline: none; background: white; }
+        /* 頂部分類與統計 */
+        .top-bar { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; background: white; outline: none; }
+        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #7f8c8d; padding: 0 5px; }
 
-        /* 可收納的管理區域 */
-        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 10px; border-radius: 10px; color: #57606f; font-weight: bold; cursor: pointer; margin-bottom: 5px; }
-        .admin-panel { display: none; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; flex-direction: column; gap: 10px; }
+        /* 管理區域（收納式） */
+        .admin-toggle { width: 100%; background: #dcdde1; border: none; padding: 10px; border-radius: 10px; color: #2f3542; font-weight: bold; margin-bottom: 8px; }
+        .admin-panel { display: none; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; flex-direction: column; gap: 10px; border: 2px solid transparent; }
         .admin-panel.active { display: flex; }
+        .editing { border-color: var(--warning); background: #fffdf2; }
+        
         input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
         .btn-group { display: flex; gap: 8px; }
-        .btn { border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; color: white; flex: 1; }
+        .btn { border: none; border-radius: 8px; padding: 12px; font-weight: bold; color: white; flex: 1; cursor: pointer; }
         .btn-add { background: var(--primary); }
         .btn-save { background: var(--success); }
-        .btn-cancel { background: #a4b0be; }
+        .btn-cancel { background: #95a5a6; }
 
-        /* 閃卡樣式 */
-        .card { width: 100%; height: 220px; perspective: 1000px; margin: 10px 0; }
+        /* 閃卡 */
+        .card { width: 100%; height: 240px; perspective: 1000px; margin: 10px 0; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 20px; background: white; box-shadow: 0 6px 20px rgba(0,0,0,0.06); border: 1px solid #eee; }
-        .card-back { transform: rotateY(180deg); background: #eef5ff; color: var(--primary); }
-        #word-display { font-size: 2.2rem; font-weight: bold; color: #2f3542; word-break: break-all; text-align: center; padding: 0 10px; }
-        #meaning-display { font-size: 1.6rem; text-align: center; }
-        .cat-badge { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #a4b0be; }
-        .star-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; color: #ddd; background: none; border: none; padding: 5px; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 25px; background: white; box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
+        .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); }
+        
+        #word-display { font-size: 2.4rem; font-weight: bold; color: #2f3542; text-align: center; width: 90%; }
+        #meaning-display { font-size: 1.8rem; text-align: center; }
+        .cat-tag { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #bdc3c7; }
+        .star-btn { position: absolute; top: 10px; right: 15px; font-size: 26px; color: #eee; background: none; border: none; padding: 5px; }
         .star-btn.active { color: var(--warning); }
 
         /* 導覽按鈕 */
         .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
-        .nav-btn { background: #ced4da; border: none; padding: 15px; border-radius: 12px; font-size: 18px; color: #495057; }
-        .full-width { grid-column: span 2; }
-        .btn-edit { background: #f1f2f6; color: #57606f; font-size: 14px; }
-        .btn-del { background: #fff5f5; color: var(--danger); font-size: 14px; }
+        .nav-btn { background: #ffffff; border: 1px solid #eee; padding: 15px; border-radius: 15px; font-size: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .btn-sub { font-size: 14px; background: #f8f9fa; color: #7f8c8d; }
+        .btn-del { color: var(--danger); background: #fffcfc; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <h2>🇯🇵 我的日文單字本</h2>
-
         <div class="top-bar">
             <select id="catFilter" onchange="changeCategoryFilter()">
                 <option value="all">📁 全部單字</option>
             </select>
+            <div class="stats-row">
+                <span id="counter">0 / 0</span>
+                <span id="mode-text">正在閱讀全部</span>
+            </div>
             
-            <button class="admin-toggle" onclick="toggleAdminPanel()">⚙️ 管理 / 新增單字</button>
+            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字</button>
             <div id="adminPanel" class="admin-panel">
-                <div id="panelTitle" style="font-size:14px; font-weight:bold; color:var(--primary);">新增單字</div>
+                <b id="panelTitle">新增單字</b>
                 <input type="text" id="catInput" placeholder="分類 (如: 第一課)" list="cat-history">
                 <datalist id="cat-history"></datalist>
-                <input type="text" id="jpInput" placeholder="日文">
-                <input type="text" id="cnInput" placeholder="中文意思">
+                <input type="text" id="jpInput" placeholder="輸入日文或漢字">
+                <input type="text" id="cnInput" placeholder="輸入中文意思">
                 
-                <div id="addModeBtns">
+                <div id="addBtns">
                     <button class="btn btn-add" style="width:100%" onclick="addWord()">➕ 加入單字本</button>
                 </div>
-                <div id="editModeBtns" style="display:none;" class="btn-group">
+                <div id="editBtns" style="display:none;" class="btn-group">
                     <button class="btn btn-save" onclick="saveEdit()">💾 儲存修改</button>
                     <button class="btn btn-cancel" onclick="cancelEdit()">取消</button>
                 </div>
-                <div style="display:flex; gap:5px; margin-top:10px;">
-                    <button class="btn" style="background:#6c757d; font-size:12px;" onclick="shuffleWords()">🔀 亂序</button>
-                    <button id="filterBtn" class="btn" style="background:#6c757d; font-size:12px;" onclick="toggleFilter()">🎯 複習星號</button>
-                    <button class="btn" style="background:#6c757d; font-size:12px;" onclick="exportData()">💾 備份</button>
+                
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <button class="btn" style="background:#7f8c8d; font-size:11px;" onclick="shuffleWords()">🔀 亂序</button>
+                    <button id="filterBtn" class="btn" style="background:#7f8c8d; font-size:11px;" onclick="toggleFilter()">🎯 複習星號</button>
+                    <button class="btn" style="background:#7f8c8d; font-size:11px;" onclick="exportData()">💾 備份</button>
                 </div>
             </div>
         </div>
 
-        <div style="text-align:right; font-size:12px; color:#a4b0be; margin-bottom:5px;" id="counter">0 / 0</div>
-
         <div class="card" id="flashcard" onclick="flipCard()">
             <div class="card-inner">
                 <div class="card-front">
-                    <span id="cat-display" class="cat-badge">分類</span>
+                    <span id="cat-display" class="cat-tag">分類</span>
                     <button id="starBtn" class="star-btn" onclick="togglePin(event)">★</button>
-                    <div id="word-display">尚未新增單字</div>
-                    <button style="margin-top:20px; border:none; background:#f1f2f6; padding:8px 15px; border-radius:20px; font-size:12px;" onclick="speakWord(event)">🔊 發音</button>
+                    <div id="word-display">尚未新增</div>
+                    <button style="margin-top:25px; border:none; background:#f1f2f6; padding:10px 20px; border-radius:20px; font-size:13px;" onclick="speakWord(event)">🔊 聽發音</button>
                 </div>
                 <div class="card-back">
                     <div id="meaning-display">意思</div>
@@ -98,8 +101,8 @@
         <div class="nav-controls">
             <button class="nav-btn" onclick="prevWord()">⬅️</button>
             <button class="nav-btn" onclick="nextWord()">➡️</button>
-            <button class="nav-btn btn-edit" onclick="startEdit()">✏️ 修正內容/分類</button>
-            <button class="nav-btn btn-del" onclick="deleteWord()">🗑️ 刪除</button>
+            <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正內容/分類</button>
+            <button class="nav-btn btn-sub btn-del" onclick="deleteWord()">🗑️ 刪除</button>
         </div>
     </div>
 
@@ -107,8 +110,35 @@
         let allWords = JSON.parse(localStorage.getItem('myWords')) || [];
         let isFilterMode = false, selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
 
-        function toggleAdminPanel() { document.getElementById('adminPanel').classList.toggle('active'); }
+        // --- 強化版日文語音邏輯 ---
+        let jpVoice = null;
+        function findJpVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            // 強制尋找語言代碼包含 ja 的語音包
+            jpVoice = voices.find(v => v.lang.toLowerCase().includes('ja')) || voices.find(v => v.lang === 'ja-JP');
+        }
+        window.speechSynthesis.onvoiceschanged = findJpVoice;
+        findJpVoice();
 
+        function speakWord(e) {
+            if (e) e.stopPropagation();
+            if (displayList.length === 0) return;
+            
+            window.speechSynthesis.cancel(); // 停止目前所有發音
+            const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
+            
+            if (jpVoice) {
+                utter.voice = jpVoice; // 強制指定日文語音包
+            }
+            utter.lang = 'ja-JP'; // 設定語言
+            utter.rate = 0.8;      // 慢速唸更清楚
+            
+            // 某些瀏覽器需要先「說一個字」來啟動
+            window.speechSynthesis.speak(utter);
+        }
+        // -------------------------
+
+        function toggleAdmin() { document.getElementById('adminPanel').classList.toggle('active'); }
         function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
 
         function updateDisplayList() {
@@ -124,10 +154,10 @@
             const filter = document.getElementById('catFilter');
             const history = document.getElementById('cat-history');
             const cats = [...new Set(allWords.map(w => w.cat || "未分類"))];
-            const currentSelected = selectedCategory;
             filter.innerHTML = '<option value="all">📁 全部單字</option>' + cats.map(c => `<option value="${c}">📁 ${c}</option>`).join('');
-            filter.value = currentSelected;
+            filter.value = selectedCategory;
             history.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+            document.getElementById('mode-text').innerText = `正在閱讀：${selectedCategory === 'all' ? '全部' : selectedCategory}`;
         }
 
         function addWord() {
@@ -143,7 +173,7 @@
                 render();
                 speakWord();
                 document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
-                toggleAdminPanel();
+                toggleAdmin();
             }
         }
 
@@ -154,10 +184,10 @@
             document.getElementById('catInput').value = current.cat;
             document.getElementById('jpInput').value = current.jp;
             document.getElementById('cnInput').value = current.cn;
-            document.getElementById('panelTitle').innerText = "✏️ 修改中...";
-            document.getElementById('addModeBtns').style.display = 'none';
-            document.getElementById('editModeBtns').style.display = 'flex';
-            document.getElementById('adminPanel').classList.add('active');
+            document.getElementById('panelTitle').innerText = "✏️ 正在修改此單字...";
+            document.getElementById('addBtns').style.display = 'none';
+            document.getElementById('editBtns').style.display = 'flex';
+            document.getElementById('adminPanel').classList.add('active', 'editing');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -165,41 +195,31 @@
             const idx = allWords.findIndex(w => w.id === editTargetId);
             if (idx !== -1) {
                 allWords[idx] = {...allWords[idx], cat: document.getElementById('catInput').value, jp: document.getElementById('jpInput').value, cn: document.getElementById('cnInput').value};
-                save(); cancelEdit(); updateDisplayList(); toggleAdminPanel();
+                save(); cancelEdit(); updateDisplayList(); toggleAdmin();
             }
         }
 
         function cancelEdit() {
             editTargetId = null;
             document.getElementById('panelTitle').innerText = "新增單字";
-            document.getElementById('addModeBtns').style.display = 'block';
-            document.getElementById('editModeBtns').style.display = 'none';
+            document.getElementById('addBtns').style.display = 'block';
+            document.getElementById('editBtns').style.display = 'none';
+            document.getElementById('adminPanel').classList.remove('active', 'editing');
             document.getElementById('catInput').value = ''; document.getElementById('jpInput').value = ''; document.getElementById('cnInput').value = '';
         }
 
         function render() {
             const wordDisp = document.getElementById('word-display'), meanDisp = document.getElementById('meaning-display'), 
                   catDisp = document.getElementById('cat-display'), counter = document.getElementById('counter'), starBtn = document.getElementById('starBtn');
-            
             counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
-            
             if (displayList.length === 0) {
-                wordDisp.innerText = "尚無資料"; meanDisp.innerText = ""; catDisp.innerText = "-"; starBtn.classList.remove('active');
+                wordDisp.innerText = "目前沒有單字"; meanDisp.innerText = ""; catDisp.innerText = "-"; starBtn.classList.remove('active');
                 return;
             }
             const current = displayList[currentIndex];
             wordDisp.innerText = current.jp; meanDisp.innerText = current.cn; catDisp.innerText = current.cat || "未分類";
             current.isHard ? starBtn.classList.add('active') : starBtn.classList.remove('active');
             document.getElementById('flashcard').classList.remove('flipped');
-        }
-
-        function speakWord(e) {
-            if (e) e.stopPropagation();
-            if (displayList.length > 0) {
-                window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(displayList[currentIndex].jp);
-                utter.lang = 'ja-JP'; utter.rate = 0.85; window.speechSynthesis.speak(utter);
-            }
         }
 
         function deleteWord() {
@@ -216,7 +236,7 @@
         }
 
         function changeCategoryFilter() { selectedCategory = document.getElementById('catFilter').value; currentIndex = 0; updateDisplayList(); }
-        function toggleFilter() { isFilterMode = !isFilterMode; document.getElementById('filterBtn').style.background = isFilterMode ? "var(--warning)" : "#6c757d"; currentIndex = 0; updateDisplayList(); }
+        function toggleFilter() { isFilterMode = !isFilterMode; document.getElementById('filterBtn').style.background = isFilterMode ? "var(--warning)" : "#7f8c8d"; currentIndex = 0; updateDisplayList(); }
         function shuffleWords() { displayList.sort(() => Math.random() - 0.5); currentIndex = 0; render(); }
         function save() { localStorage.setItem('myWords', JSON.stringify(allWords)); }
         function nextWord() { if(displayList.length > 0) { currentIndex = (currentIndex + 1) % displayList.length; render(); } }

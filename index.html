@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>日文單字 App - 測驗增強版</title>
+    <title>日文單字 App - 佈局優化版</title>
     <style>
         :root { --primary: #007bff; --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --bg: #f8f9fa; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 4px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .app-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; flex-grow: 1; }
         
-        /* 頂部切換選單 - 獨立出一欄測驗 */
         .mode-tabs { display: flex; width: 100%; gap: 5px; margin-bottom: 8px; }
         .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: #e2e8f0; color: #4a5568; font-weight: bold; cursor: pointer; font-size: 14px; }
         .tab-btn.active { background: var(--primary); color: white; }
@@ -19,7 +18,6 @@
         select { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid var(--primary); font-size: 15px; font-weight: bold; background: white; outline: none; }
         .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #a4b0be; padding: 2px 5px; }
 
-        /* 間距縮小後的卡片區 */
         .card-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; margin: 5px 0; }
         .card { width: 100%; height: 240px; perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
@@ -33,18 +31,25 @@
         .star-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; color: #eee; background: none; border: none; cursor: pointer; }
         .star-btn.active { color: var(--warning); }
 
-        /* 測驗模式專用樣式 */
         #quiz-view { display: none; width: 100%; text-align: center; flex-direction: column; align-items: center; }
         .quiz-box { background: white; width: 100%; padding: 30px 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .ans-text { font-size: 24px; color: var(--success); margin-top: 20px; font-weight: bold; min-height: 36px; }
 
-        /* 底部操作區緊湊化 */
-        .bottom-section { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-bottom: 10px; }
-        .nav-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .nav-btn { background: white; border: 1px solid #eee; padding: 12px; border-radius: 15px; font-size: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
-        .btn-sub { font-size: 13px; background: #f1f2f6; color: #57606f; font-weight: bold; }
+        /* --- 底部操作區佈局調整 --- */
+        .bottom-section { width: 100%; display: flex; flex-direction: column; margin-top: auto; padding-bottom: 15px; }
         
-        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 10px; border-radius: 10px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 13px; }
+        /* 1. 左右箭頭列 */
+        .nav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; } /* 加大間距 */
+        
+        /* 2. 修正與刪除列 */
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; } /* 加大間距 */
+
+        .nav-btn { background: white; border: 1px solid #eee; padding: 14px; border-radius: 15px; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
+        .btn-sub { font-size: 14px; background: #f1f2f6; color: #57606f; font-weight: bold; padding: 10px; }
+        
+        /* 3. 最下方的管理按鈕 */
+        .admin-toggle { width: 100%; background: #dfe4ea; border: none; padding: 12px; border-radius: 12px; color: #2f3542; font-weight: bold; cursor: pointer; font-size: 14px; }
+
         .admin-panel { display: none; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-direction: column; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; border-top: 3px solid var(--primary); }
         .admin-panel.active { display: flex; }
         input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
@@ -101,12 +106,16 @@
         </div>
 
         <div class="bottom-section">
-            <div id="study-controls" class="nav-controls">
+            <div id="nav-arrows" class="nav-row">
                 <button class="nav-btn" onclick="prevWord()">⬅️</button>
                 <button class="nav-btn" onclick="nextWord()">➡️</button>
-                <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正</button>
-                <button class="nav-btn btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除</button>
             </div>
+
+            <div id="edit-actions" class="action-row">
+                <button class="nav-btn btn-sub" onclick="startEdit()">✏️ 修正單字</button>
+                <button class="nav-btn btn-sub" style="color:var(--danger)" onclick="deleteWord()">🗑️ 刪除單字</button>
+            </div>
+
             <button class="admin-toggle" onclick="toggleAdmin()">⚙️ 管理 / 新增單字 / 備份</button>
         </div>
     </div>
@@ -142,13 +151,14 @@
         try { allWords = JSON.parse(localStorage.getItem('myWords')) || []; } catch(e) { allWords = []; }
 
         let selectedCategory = "all", displayList = [], currentIndex = 0, editTargetId = null;
-        let currentMode = 'study'; // 'study' or 'quiz'
+        let currentMode = 'study';
 
         function switchMode(mode) {
             currentMode = mode;
             document.getElementById('study-view').style.display = (mode === 'study') ? 'flex' : 'none';
-            document.getElementById('study-controls').style.display = (mode === 'study') ? 'grid' : 'none';
             document.getElementById('quiz-view').style.display = (mode === 'quiz') ? 'flex' : 'none';
+            document.getElementById('edit-actions').style.display = (mode === 'study') ? 'grid' : 'none';
+            document.getElementById('nav-arrows').style.display = (mode === 'study') ? 'grid' : 'none';
             
             document.getElementById('tab-study').classList.toggle('active', mode === 'study');
             document.getElementById('tab-quiz').classList.toggle('active', mode === 'quiz');
@@ -157,17 +167,12 @@
             else render();
         }
 
-        // 測驗邏輯
         function nextQuiz() {
-            if (displayList.length === 0) {
-                document.getElementById('quiz-jp').innerText = "請先增加單字";
-                return;
-            }
-            // 隨機跳一個
+            if (displayList.length === 0) { document.getElementById('quiz-jp').innerText = "請先增加單字"; return; }
             currentIndex = Math.floor(Math.random() * displayList.length);
             document.getElementById('quiz-jp').innerText = displayList[currentIndex].jp;
             document.getElementById('quiz-ans-area').innerText = "";
-            render(); // 更新頂部計數
+            render();
         }
 
         function showQuizAnswer() {
@@ -176,8 +181,6 @@
                 speakWord();
             }
         }
-
-        // --- 以下保留你原有的核心邏輯並優化 ---
 
         let jpVoice = null;
         function findJpVoice() {
@@ -207,7 +210,6 @@
             if (selectedCategory === "all") { displayList = allWords; } 
             else if (selectedCategory === "favorites") { displayList = allWords.filter(w => w.isHard); } 
             else { displayList = allWords.filter(w => (w.cat || "未分類") === selectedCategory); }
-            
             if (currentIndex >= displayList.length) currentIndex = 0;
             updateCategoryUI();
             render();
@@ -228,14 +230,10 @@
             const counter = document.getElementById('counter'), wordDisp = document.getElementById('word-display'), 
                   meanDisp = document.getElementById('meaning-display'), catDisp = document.getElementById('cat-display'),
                   starBtn = document.getElementById('starBtn');
-            
             counter.innerText = displayList.length > 0 ? `${currentIndex + 1} / ${displayList.length}` : "0 / 0";
-            if (displayList.length === 0) {
-                wordDisp.innerText = "空"; meanDisp.innerText = ""; return;
-            }
+            if (displayList.length === 0) { wordDisp.innerText = "空"; meanDisp.innerText = ""; return; }
             const current = displayList[currentIndex];
-            wordDisp.innerText = current.jp; 
-            meanDisp.innerText = current.cn;
+            wordDisp.innerText = current.jp; meanDisp.innerText = current.cn;
             catDisp.innerText = current.cat || "未分類";
             starBtn.classList.toggle('active', current.isHard);
             document.getElementById('flashcard').classList.remove('flipped');
